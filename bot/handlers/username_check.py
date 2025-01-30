@@ -1,25 +1,51 @@
-import asyncio
+from aiogram import Bot, F
+from aiogram.types import Message
+from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import StatesGroup, State
+from aiogram.exceptions import TelegramBadRequest
 import re
 import aiohttp
-import os
-import certifi
 import ssl
-from aiogram import Bot, Dispatcher, F
-from aiogram.exceptions import TelegramBadRequest
-from aiogram.types import Message
-from config import BOT_TOKEN
 
-# Устанавливаем переменную окружения для SSL
-os.environ["SSL_CERT_FILE"] = certifi.where()
+# Определяем состояния FSM
+class UsernameCheck(StatesGroup):
+    waiting_for_username = State()
 
-print(f"[SETUP] SSL_CERT_FILE установлен в: {os.environ['SSL_CERT_FILE']}")
+async def handle_check_command(message: Message, state: FSMContext):
+    """Обрабатывает команду /check и переводит в состояние ожидания username"""
+    await message.reply("🔍 Введите username, который хотите проверить:")
+    await state.set_state(UsernameCheck.waiting_for_username)
 
-# Создаём бота и диспетчер
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher()
+async def handle_username_input(message: Message, bot: Bot, state: FSMContext):
+    """Обрабатывает введённый username"""
+    username = message.text.strip().replace("@", "")
 
+    # Проверяем формат username
+    if not re.match(r"^[a-zA-Z0-9_]{5,32}$", username) or "__" in username or username.startswith("_") or username.endswith("_"):
+        await message.reply(
+            "❌ Ошибка: username должен соответствовать следующим требованиям:\n"
+            "✅ Латинские буквы, цифры и `_`\n"
+            "✅ Длина: 5-32 символа\n"
+            "✅ Не начинаться и не заканчиваться `_`\n"
+            "✅ Не содержать два подряд `_`"
+        )
+        return
 
-async def check_username_availability(username: str) -> str:
+    # Проверяем доступность username
+    status = await check_username_availability(bot, username)
+
+    # Отправляем результат пользователю
+    responses = {
+        "Свободно": f"✅ Имя @{username} свободно!",
+        "Занято": f"❌ Имя @{username} уже занято.",
+        "Невозможно определить": f"⚠️ Не удалось определить доступность имени @{username}. Попробуйте позже."
+    }
+    await message.reply(responses[status])
+
+    # Сбрасываем состояние
+    await state.clear()
+
+async def check_username_availability(bot: Bot, username: str) -> str:
     """Проверяет, свободен ли юзернейм в Telegram через API и t.me."""
     print(f"\n[STEP 1] 🔎 Начинаем проверку username: @{username}")
 
@@ -39,7 +65,6 @@ async def check_username_availability(username: str) -> str:
 
         print(f"[ERROR] ❗ Неожиданная ошибка API: {error_message}")
         return "Невозможно определить"
-
 
 async def check_username_via_web(username: str) -> str:
     """Дополнительная проверка через t.me/{username} с анализом HTML-кода."""
@@ -71,46 +96,3 @@ async def check_username_via_web(username: str) -> str:
 
             print(f"[WARNING] ⚠️ Непонятный ответ от t.me для @{username}: {response.status}, HTML: {text[:500]}")
             return "Невозможно определить"
-
-
-@dp.message(F.text.startswith("/check"))
-async def check(message: Message):
-    args = message.text.split()
-    if len(args) < 2:
-        await message.reply("Использование: /check [username]")
-        return
-
-    username = args[1].replace("@", "")
-
-    # 🔹 Проверяем, соответствует ли username критериям Telegram
-    if not re.match(r"^[a-zA-Z0-9_]{5,32}$", username) or "__" in username or username.startswith(
-            "_") or username.endswith("_"):
-        await message.reply(
-            "❌ Ошибка: username должен соответствовать следующим требованиям:\n"
-            "1️⃣ **Содержать только латинские буквы (`A-Z, a-z`), цифры (`0-9`) и `_`**\n"
-            "2️⃣ **Быть длиной от 5 до 32 символов**\n"
-            "3️⃣ **Не начинаться и не заканчиваться `_`**\n"
-            "4️⃣ **Не содержать два подряд идущих `_` (например, `hello__world`)**"
-        )
-        return
-
-    status = await check_username_availability(username)
-
-    responses = {
-        "Свободно": f"✅ Имя @{username} свободно!",
-        "Занято": f"❌ Имя @{username} уже занято.",
-        "Невозможно определить": f"⚠️ Не удалось определить доступность имени @{username}. Попробуйте позже."
-    }
-
-    print(f"[FINAL RESULT] 📢 Итог для @{username}: {status}\n" + "-" * 50)
-    await message.reply(responses[status])
-
-
-async def main():
-    """Запуск бота"""
-    await bot.delete_webhook(drop_pending_updates=True)
-    await dp.start_polling(bot)
-
-
-if __name__ == '__main__':
-    asyncio.run(main())
