@@ -1,24 +1,20 @@
 import asyncio
-from aiogram import Bot, Dispatcher, F
-from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.filters import StateFilter
-from config import BOT_TOKEN
-from handlers.username_check import handle_check_command, handle_username_input
-from utils.bot_setup import set_bot_commands
-
-# Создаём экземпляры бота и диспетчера
-bot = Bot(token=BOT_TOKEN)
-dp = Dispatcher(storage=MemoryStorage())
-
-# Регистрируем обработчики
-dp.message.register(handle_check_command, F.text == "/check")  # Обработчик команды /check
-dp.message.register(handle_username_input, StateFilter("UsernameCheck:waiting_for_username"))  # FSM фильтр
+from setup import bot, dp
+from handlers.start import start_router
+from handlers.generate import generate_router
+from handlers.common import common_router
 
 async def main():
     """Запуск бота"""
-    await bot.delete_webhook(drop_pending_updates=True)
-    await set_bot_commands(bot)  # Устанавливаем команды бота
+    # Регистрируем обработчики
+    dp.include_router(start_router)
+    dp.include_router(generate_router)
+    dp.include_router(common_router)
+    # Запускаем polling
     await dp.start_polling(bot)
 
-if __name__ == '__main__':
-    asyncio.run(main())
+if __name__ == "__main__":
+    asyncio.run(main())  # Асинхронный запуск
+
+
+

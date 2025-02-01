@@ -1,0 +1,3 @@
+ # Список зависимостей (aiogram, requests и т. д.)
+aiogram
+

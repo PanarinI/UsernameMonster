@@ -5,13 +5,44 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dc3dfd3-23d6-43ef-80e6-f1e226db0f26" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/bot/handlers/username_check.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/main.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/utils/bot_setup.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/handlers/common.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/handlers/generate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/handlers/start.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/keyboards/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/keyboards/check.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/keyboards/generate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/keyboards/menu.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/keyboards/register.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/services/__init__.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/services/availability_checker.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/services/generate.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/services/username_register.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/setup.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/utils/logger.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/documentation/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/documentation/iaogram3.17_inline_keyboard.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/documentation/logic_bot.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/documentation/logic_user.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/check_test.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/audience.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/audience.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/bot.get_chat(username).md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/bot.get_chat(username).md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/botpic.webp" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/botpic.webp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/old_versions/check_old.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/check_method_logic.png" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/diagrams/check_method_logic.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/username_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/old_versions/check_method_logic.png" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/diagrams/old_versions/check_method_logic.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/old_versions/check_method_logic_freestyle.png" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/diagrams/old_versions/check_method_logic_freestyle.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/utils/bot_setup.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/concept.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/concept.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/console_log.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/console_log.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/content.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/content.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logic_bot.md" beforeDir="false" afterPath="$PROJECT_DIR$/bot/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/logic_user.md" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/__init__.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/username_check_methods.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/username_check_methods.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/username_criteria.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/username_criteria.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,11 +82,16 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Python.__init__.executor": "Run",
+    "Python._main.executor": "Run",
     "Python.bot_setup.executor": "Run",
     "Python.check.executor": "Run",
     "Python.check_test.executor": "Run",
+    "Python.generate.executor": "Run",
     "Python.main.executor": "Run",
+    "Python.menu.executor": "Run",
     "Python.menu_handler.executor": "Run",
+    "Python.start.executor": "Run",
     "Python.username_check.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
@@ -65,11 +101,41 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="F:\PythonProject\UsernameBot\bot\handlers" />
-      <recent name="F:\PythonProject\UsernameBot\bot\utils" />
-      <recent name="F:\PythonProject\UsernameBot\bot" />
       <recent name="F:\PythonProject\UsernameBot" />
+      <recent name="F:\PythonProject\UsernameBot\documentation" />
+      <recent name="F:\PythonProject\UsernameBot\bot\old_versions" />
+      <recent name="F:\PythonProject\UsernameBot\documentation\diagrams" />
+      <recent name="F:\PythonProject\UsernameBot\bot" />
     </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="__init__" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
+      <module name="UsernameBot" />
+      <option name="ENV_FILES" value="" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/bot" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/bot/__init__.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Python.__init__" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
