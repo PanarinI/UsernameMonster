@@ -5,44 +5,19 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dc3dfd3-23d6-43ef-80e6-f1e226db0f26" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/bot/handlers/common.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/handlers/generate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/handlers/start.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/keyboards/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/keyboards/check.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/keyboards/generate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/keyboards/menu.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/keyboards/register.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/services/__init__.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/services/availability_checker.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/services/generate.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/services/username_register.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/setup.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/utils/logger.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/documentation/README.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/documentation/iaogram3.17_inline_keyboard.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/documentation/logic_bot.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/documentation/logic_user.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/handlers/help.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/handlers/states.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/bot/utils/texts.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/audience.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/audience.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/bot.get_chat(username).md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/bot.get_chat(username).md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/botpic.webp" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/botpic.webp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/old_versions/check_old.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/check_method_logic.png" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/diagrams/check_method_logic.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/username_check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/common.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/generate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/handlers/start.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/start.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/keyboards/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/keyboards/check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/keyboards/menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/keyboards/main_menu.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/old_versions/check_method_logic.png" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/diagrams/old_versions/check_method_logic.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/old_versions/check_method_logic_freestyle.png" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/diagrams/old_versions/check_method_logic_freestyle.png" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/utils/bot_setup.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/concept.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/concept.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/console_log.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/console_log.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/content.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/content.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logic_bot.md" beforeDir="false" afterPath="$PROJECT_DIR$/bot/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/logic_user.md" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/__init__.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/username_check_methods.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/username_check_methods.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/username_criteria.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/username_criteria.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/services/availability_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/services/check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/username_check_methods.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/username_check_methods.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -80,32 +55,34 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.__init__.executor": "Run",
-    "Python._main.executor": "Run",
-    "Python.bot_setup.executor": "Run",
-    "Python.check.executor": "Run",
-    "Python.check_test.executor": "Run",
-    "Python.generate.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.menu.executor": "Run",
-    "Python.menu_handler.executor": "Run",
-    "Python.start.executor": "Run",
-    "Python.username_check.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "settings.editor.selected.configurable": "org.jetbrains.plugins.github.ui.GithubSettingsConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python._main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.bot_setup.executor&quot;: &quot;Run&quot;,
+    &quot;Python.check.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.check_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.common.executor&quot;: &quot;Run&quot;,
+    &quot;Python.generate.executor&quot;: &quot;Run&quot;,
+    &quot;Python.help.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.menu.executor&quot;: &quot;Run&quot;,
+    &quot;Python.menu_handler.executor&quot;: &quot;Run&quot;,
+    &quot;Python.start.executor&quot;: &quot;Run&quot;,
+    &quot;Python.username_check.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="F:\PythonProject\UsernameBot\bot\handlers" />
       <recent name="F:\PythonProject\UsernameBot" />
       <recent name="F:\PythonProject\UsernameBot\documentation" />
       <recent name="F:\PythonProject\UsernameBot\bot\old_versions" />
       <recent name="F:\PythonProject\UsernameBot\documentation\diagrams" />
-      <recent name="F:\PythonProject\UsernameBot\bot" />
     </key>
   </component>
   <component name="RunManager">

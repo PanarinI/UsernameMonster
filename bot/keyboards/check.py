@@ -1,10 +1,13 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-def after_check_keyboard():
-    """Кнопки после проверки username"""
-    keyboard = InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text="🔍 Проверить другой", callback_data="check")],
-        [InlineKeyboardButton(text="🏠 Главное меню", callback_data="menu")]
-    ])
-    return keyboard
-
+def check_result_kb() -> InlineKeyboardMarkup:
+    """
+    Создаёт клавиатуру с кнопками "Проверить другое имя" и "Назад в главное меню".
+    """
+    keyboard = [
+        [
+            InlineKeyboardButton(text="Проверить другое имя", callback_data="check"),
+            InlineKeyboardButton(text="Назад в главное меню", callback_data="back_to_main")
+        ]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=keyboard)

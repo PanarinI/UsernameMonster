@@ -1,6 +1,6 @@
 from aiogram import Router, types
 from aiogram.filters import Command
-from bot.keyboards.menu import main_menu  # Импортируем клавиатуру
+from keyboards.main_menu import main_menu  # Импортируем клавиатуру
 
 start_router = Router()  # Создаём Router
 

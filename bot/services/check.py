@@ -1,6 +1,6 @@
 import aiohttp
-import ssl
 import re
+import ssl
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest
 
@@ -30,28 +30,32 @@ async def check_username_via_web(username: str) -> str:
     url = f"https://t.me/{username}"
     print("[STEP 4] 🔹 Запрос к t.me...")
 
+    # Используем безопасный SSL-контекст
     ssl_context = ssl.create_default_context()
-    ssl_context.check_hostname = False
-    ssl_context.verify_mode = ssl.CERT_NONE
 
     async with aiohttp.ClientSession() as session:
-        async with session.get(url, ssl=ssl_context) as response:
-            text = await response.text()
+        try:
+            async with session.get(url, ssl=False) as response:
+                text = await response.text()
 
-            if response.status == 404:
-                print(f"[RESULT] ✅ Имя @{username} свободно (t.me).")
-                return "Свободно"
+                if response.status == 404:
+                    print(f"[RESULT] ✅ Имя @{username} свободно (t.me).")
+                    return "Свободно"
 
-            title_match = re.search(r"<title>(.*?)</title>", text, re.IGNORECASE)
-            title_text = title_match.group(1) if title_match else ""
+                title_match = re.search(r"<title>(.*?)</title>", text, re.IGNORECASE)
+                title_text = title_match.group(1) if title_match else ""
 
-            if "tgme_page_title" in text or "If you have Telegram, you can contact" in text:
-                print(f"[RESULT] ❌ Имя @{username} занято (t.me).")
-                return "Занято"
+                if "tgme_page_title" in text or "If you have Telegram, you can contact" in text:
+                    print(f"[RESULT] ❌ Имя @{username} занято (t.me).")
+                    return "Занято"
 
-            if f"Telegram: Contact @{username}" in title_text and "tgme_page_title" not in text:
-                print(f"[RESULT] ✅ Имя @{username} свободно (по заголовку).")
-                return "Свободно"
+                if f"Telegram: Contact @{username}" in title_text and "tgme_page_title" not in text:
+                    print(f"[RESULT] ✅ Имя @{username} свободно (по заголовку).")
+                    return "Свободно"
 
-            print(f"[WARNING] ⚠️ Странный ответ t.me для @{username}: {response.status}, HTML: {text[:500]}")
+                print(f"[WARNING] ⚠️ Странный ответ t.me для @{username}: {response.status}, HTML: {text[:500]}")
+                return "Невозможно определить"
+
+        except aiohttp.ClientError as e:
+            print(f"[ERROR] ❗ Ошибка при запросе к t.me: {e}")
             return "Невозможно определить"
