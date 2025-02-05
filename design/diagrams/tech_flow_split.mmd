@@ -1,0 +1,32 @@
+flowchart TD
+  %% Подграф для проверки username
+  subgraph Проверка_username
+    A[Пользователь вводит username] --> B[handlers/check.py]
+    B --> C[services/check.py]
+    C --> D[Запрос к Telegram API: get_chat]
+    D -- "chat найден" --> E[Username занят]
+    D -- "chat not found" --> F[HTTP-запрос к t.me API]
+    F --> G{Анализ ответа t.me API}
+    G -- "404" --> H[Username свободен]
+    G -- "Наличие tgme_page_title или 'If you have Telegram, you can contact'" --> I[Username занят]
+    G -- "Заголовок Telegram: Contact @{username} без tgme_page_title" --> H
+    G -- "Нет совпадений" --> J[Невозможно определить]
+    E --> K[Возврат статуса пользователю]
+    H --> K
+    I --> K
+    J --> K
+  end
+
+  %% Подграф для генерации username
+  subgraph Генерация_username
+    L[Пользователь вводит контекст: ключевые слова] --> M[handlers/generate.py]
+    M --> N[services/generate.py]
+    N --> O[Запрос к OpenAI API: chat.completions.create]
+    O --> P[Получение списка сгенерированных username]
+    P --> Q[Проверка каждого username через services/check.py]
+    Q --> R{Статус username}
+    R -- "Доступен" --> S[Включить в итоговый список]
+    R -- "Недоступен/неопределён" --> T[Отбросить]
+    S & T --> U[Формирование итогового списка]
+    U --> V[Возврат списка пользователю]
+  end

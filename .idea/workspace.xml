@@ -5,19 +5,55 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dc3dfd3-23d6-43ef-80e6-f1e226db0f26" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/bot/handlers/help.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/handlers/states.py" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/bot/utils/texts.py" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/design/about_design.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/design/diagrams/tech_flow_basic.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/design/diagrams/tech_flow_global.mmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/design/diagrams/tech_flow_overall.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/design/diagrams/tech_flow_split.mmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/design/diagrams/tech_flow_split.svg" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/diagram_generator/diagram.mmd" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/diagram_generator/help.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/diagram_generator/render_diagram.bat" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/ARCHITECTURE.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/CHANGELOG.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/FEATURES.MD" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/IDEAS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/PLANS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/SETUP.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/TECH_FLOW.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/USER_FLOW.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/_TASKS.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/functions/get_available_usernames.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/docs/functions/handlers_generate.md" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/old_versions/service.generate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/common.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/generate.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot/handlers/start.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/start.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/keyboards/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/keyboards/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/keyboards/menu.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/keyboards/main_menu.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/services/availability_checker.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/services/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/documentation/username_check_methods.md" beforeDir="false" afterPath="$PROJECT_DIR$/documentation/username_check_methods.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/keyboards/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/keyboards/generate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/keyboards/register.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/services/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/services/check.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/services/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/services/generate.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/services/username_register.py" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/bot/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/setup.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/README.md" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/audience.md" beforeDir="false" afterPath="$PROJECT_DIR$/design/audience.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/bot.get_chat(username).md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/functions/bot.get_chat(username).md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/bot.structure.md" beforeDir="false" afterPath="$PROJECT_DIR$/design/bot.structure.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/botpic.webp" beforeDir="false" afterPath="$PROJECT_DIR$/design/botpic.webp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/concept.md" beforeDir="false" afterPath="$PROJECT_DIR$/design/concept.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/console_log.md" beforeDir="false" afterPath="$PROJECT_DIR$/design/console_log.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/content.md" beforeDir="false" afterPath="$PROJECT_DIR$/design/content.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/diagrams/check_method_logic.png" beforeDir="false" afterPath="$PROJECT_DIR$/design/diagrams/check_method_logic.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/diagrams/old_versions/check_method_logic.png" beforeDir="false" afterPath="$PROJECT_DIR$/design/diagrams/old_versions/check_method_logic.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/diagrams/old_versions/check_method_logic_freestyle.png" beforeDir="false" afterPath="$PROJECT_DIR$/design/diagrams/old_versions/check_method_logic_freestyle.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/iaogram3.17_inline_keyboard.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/functions/iaogram3.17_inline_keyboard.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/logic_bot.md" beforeDir="false" afterPath="$PROJECT_DIR$/design/logic_bot.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/logic_user.md" beforeDir="false" afterPath="$PROJECT_DIR$/design/user_flow_general.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/username_check_methods.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/functions/username_check_methods.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/documentation/username_criteria.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/functions/username_criteria.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -63,6 +99,7 @@
     &quot;Python.check.executor&quot;: &quot;Debug&quot;,
     &quot;Python.check_test.executor&quot;: &quot;Run&quot;,
     &quot;Python.common.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
     &quot;Python.generate.executor&quot;: &quot;Run&quot;,
     &quot;Python.help.executor&quot;: &quot;Run&quot;,
     &quot;Python.main.executor&quot;: &quot;Run&quot;,
@@ -73,16 +110,20 @@
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;org.jetbrains.plugins.github.ui.GithubSettingsConfigurable&quot;
+    &quot;last_opened_file_path&quot;: &quot;F:/PythonProject/UsernameBot/diagrams&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;terminal&quot;
   }
 }</component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="F:\PythonProject\UsernameBot\diagrams" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
-      <recent name="F:\PythonProject\UsernameBot\bot\handlers" />
       <recent name="F:\PythonProject\UsernameBot" />
-      <recent name="F:\PythonProject\UsernameBot\documentation" />
-      <recent name="F:\PythonProject\UsernameBot\bot\old_versions" />
-      <recent name="F:\PythonProject\UsernameBot\documentation\diagrams" />
+      <recent name="F:\PythonProject\UsernameBot\design\diagrams" />
+      <recent name="F:\PythonProject\UsernameBot\docs\functions" />
+      <recent name="F:\PythonProject\UsernameBot\diagrams" />
+      <recent name="F:\PythonProject\UsernameBot\docs" />
     </key>
   </component>
   <component name="RunManager">
@@ -131,6 +172,14 @@
       <updated>1738250480177</updated>
     </task>
     <servers />
+  </component>
+  <component name="TerminalProjectNonSharedOptionsProvider">
+    <envs>
+      <env key="PATH" value=" C:\Program Files\Git\cmd;C:\Program Files\Git\bin" />
+    </envs>
+  </component>
+  <component name="UnknownFeatures">
+    <option featureType="com.intellij.fileTypeFactory" implementationName="*.mmd" />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">

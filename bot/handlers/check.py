@@ -10,12 +10,6 @@ from keyboards.main_menu import main_menu  # Импорт клавиатуры �
 
 check_router = Router()  # Создаём Router
 
-def is_valid_username(username: str) -> bool:
-    """
-    Проверяет, соответствует ли username правилам Telegram.
-    """
-    pattern = r"^[a-zA-Z0-9_]{5,32}$"
-    return bool(re.match(pattern, username))
 
 @check_router.callback_query(F.data == "check")
 async def cmd_check(query: types.CallbackQuery, state: FSMContext):
@@ -25,6 +19,14 @@ async def cmd_check(query: types.CallbackQuery, state: FSMContext):
     await query.message.answer("Введите username для проверки (без @):")
     await state.set_state(CheckUsernameStates.waiting_for_username)
     await query.answer()
+
+def is_valid_username(username: str) -> bool:
+    """
+    Проверяет, соответствует ли username правилам Telegram.
+    """
+    pattern = r"^[a-zA-Z0-9_]{5,32}$"
+    return bool(re.match(pattern, username))
+
 
 @check_router.message(CheckUsernameStates.waiting_for_username)
 async def check_username(message: types.Message, bot: Bot, state: FSMContext):

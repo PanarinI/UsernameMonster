@@ -1,12 +1,10 @@
-
-Создание Inline-Клавиатуры в aiogram 3.x
+# Создание Inline-Клавиатуры в aiogram 3.x
 
 В версии aiogram 3.x объект InlineKeyboardMarkup реализован на основе Pydantic, поэтому для его создания необходимо передавать обязательный параметр inline_keyboard, представляющий собой список списков объектов InlineKeyboardButton. Рекомендуемый способ создания клавиатуры – сначала сформировать список кнопок в виде списка списков, а затем создать объект разметки, передав этот список в параметр inline_keyboard.
 
 Пример рабочего кода:
 
-python
-Копировать
+
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def generate_username_kb(usernames: list) -> InlineKeyboardMarkup:

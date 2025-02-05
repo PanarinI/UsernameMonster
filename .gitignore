@@ -3,3 +3,5 @@
 .venv/
 
 bot/config.py
+.env
+skills.md

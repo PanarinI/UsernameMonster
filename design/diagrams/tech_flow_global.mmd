@@ -1,0 +1,22 @@
+flowchart TD
+  %% Общий сервис проверки username
+  S[services/check.py: Проверка username]
+
+  %% Ветка проверки username
+  subgraph Проверка_username
+    A[Пользователь вводит username] --> B[handlers/check.py]
+    B --> S
+    S --> C[Возврат статуса пользователю]
+  end
+
+  %% Ветка генерации username
+  subgraph Генерация_username
+    D[Пользователь вводит контекст: ключевые слова] --> E[handlers/generate.py]
+    E --> F[services/generate.py]
+    F --> G[Запрос к OpenAI API: chat.completions.create]
+    G --> H[Получение списка сгенерированных username]
+    H --> I[Для каждого username вызов проверки]
+    I --> S
+    S --> J[Формирование итогового списка доступных username]
+    J --> K[Возврат списка пользователю]
+  end

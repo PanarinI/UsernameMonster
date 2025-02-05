@@ -10,3 +10,4 @@ async def cmd_start(message: types.Message):
     await message.answer("Привет! Добро пожаловать в бота. Выберите действие:", reply_markup=main_menu())
 
 
+
