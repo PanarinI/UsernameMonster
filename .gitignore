@@ -11,3 +11,4 @@ __pycache__/
 .idea/workspace.xml
 
 bot/bot.log
+__pycache__/
