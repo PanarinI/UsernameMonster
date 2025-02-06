@@ -42,3 +42,5 @@
 2025-02-06 03:40:37,495 - INFO - \u2705 Итоговые доступные username: {'wapwapv_official', 'wap_wap_v_bot', 'wapwapv_news'}
 2025-02-06 03:40:37,583 - INFO - Update id=788516481 is handled. Duration 3674 ms by bot id=7289285845
 2025-02-06 03:40:39,551 - INFO - Update id=788516483 is handled. Duration 237 ms by bot id=7289285845
+2025-02-06 03:58:55,365 - INFO - Polling stopped
+2025-02-06 03:58:55,622 - INFO - Polling stopped for bot @NameHuntBot id=7289285845 - 'NameHuntBot'

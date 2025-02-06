@@ -10,3 +10,6 @@ def setup_logging():
         filemode="w" if LOG_FILE else None
     )
 
+
+
+#### CHECK THIS TEST OUT. ЭТОТ ТЕКСТ ДОЛЖЕН ОСТАТСЯ
