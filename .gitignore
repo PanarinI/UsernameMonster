@@ -6,8 +6,8 @@ bot/config.py
 .env
 skills.md
 
-bot/bot.log
-
+__pycache__/
 .idea/
 .idea/workspace.xml
 
+bot/bot.log

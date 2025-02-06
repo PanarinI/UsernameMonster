@@ -7,7 +7,7 @@ from services.generate import get_available_usernames
 from keyboards.generate import generate_username_kb, error_retry_kb
 from .states import GenerateUsernameStates
 import config
-from keyboards.main_menu import main_menu
+from keyboards.main_menu import main_menu_kb, back_to_main_kb
 
 generate_router = Router()
 
@@ -18,7 +18,7 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
     """
     await state.clear()  # Очищаем предыдущее состояние перед новой командой
     await asyncio.sleep(0.05)  # ✅ Даем FSM время сброситься
-    await query.message.answer("Введите тему/контекст для генерации username:")
+    await query.message.answer("Введите тему/контекст для генерации username:", reply_markup=back_to_main_kb())
     await state.set_state(GenerateUsernameStates.waiting_for_context)
     await query.answer()  # Telegram требует подтверждения, что callback обработан.
 
@@ -32,7 +32,7 @@ async def cmd_generate_slash(message: types.Message, state: FSMContext):
     await state.clear()  # ⛔️ Принудительно очищаем ВСЕ состояния
     await asyncio.sleep(0.1)  # 🔄 Даём FSM время сброситься
 
-    await message.answer("Введите тему/контекст для генерации username:")
+    await message.answer("Введите тему/контекст для генерации username:", reply_markup=back_to_main_kb())
     await state.set_state(GenerateUsernameStates.waiting_for_context)
 
 
@@ -50,7 +50,7 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
         )
     except asyncio.TimeoutError:
         logging.info("Время ожидания генерации username истекло.")
-        await message.answer("Генерация username заняла слишком много времени. Попробуйте позже.", reply_markup=main_menu())
+        await message.answer("Генерация username заняла слишком много времени. Попробуйте позже.", reply_markup=main_menu_kb())
         await state.clear()
         return
 
@@ -61,9 +61,9 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
         )
         return  # Завершаем выполнение
 
-    kb = generate_username_kb(usernames)
+    kb_usernames = generate_username_kb(usernames)
     await message.answer(
         f"Вот сгенерированные для вас username по теме '{context_text}':",
-        reply_markup=kb
+        reply_markup=kb_usernames
     )
     await state.clear()
