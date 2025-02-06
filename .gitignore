@@ -8,3 +8,4 @@ skills.md
 
 bot/bot.log
 
+echo ".idea/workspace.xml" >> .gitignore
