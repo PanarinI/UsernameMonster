@@ -5,34 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dc3dfd3-23d6-43ef-80e6-f1e226db0f26" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/bugs/Команда check как воспринимается как контекст generate.md" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/diagram.svg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/diagram_generator/tree.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/bot.log" beforeDir="false" afterPath="$PROJECT_DIR$/bot/bot.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/check.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/check.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/common.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/common.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/generate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/help.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/help.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/handlers/start.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/handlers/start.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/keyboards/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/keyboards/generate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/main.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/services/generate.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/services/generate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/utils/logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/utils/logger.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bugs/curse_words.md" beforeDir="false" afterPath="$PROJECT_DIR$/bugs/curse_words.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bugs/generation_cycle.md" beforeDir="false" afterPath="$PROJECT_DIR$/bugs/generation_cycle.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/diagram_generator/diagram.mmd" beforeDir="false" afterPath="$PROJECT_DIR$/diagram_generator/diagram.mmd" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/diagram_generator/diagram.svg" beforeDir="false" afterPath="$PROJECT_DIR$/diagram_generator/diagram.svg" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/diagram_generator/help.md" beforeDir="false" afterPath="$PROJECT_DIR$/diagram_generator/help.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/diagram_generator/huy.py" beforeDir="false" afterPath="$PROJECT_DIR$/diagram_generator/huy.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/ARCHITECTURE.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/ARCHITECTURE.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/CHANGELOG.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/FEATURES.MD" beforeDir="false" afterPath="$PROJECT_DIR$/docs/FEATURES.MD" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/USER_FLOW.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/USER_FLOW.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/docs/_TASKS.md" beforeDir="false" afterPath="$PROJECT_DIR$/docs/_TASKS.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tree.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/tree_generate.md" beforeDir="false" afterPath="$PROJECT_DIR$/diagram_generator/tree_generate.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -70,32 +44,32 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Python.__init__.executor": "Run",
-    "Python._main.executor": "Run",
-    "Python.bot_setup.executor": "Run",
-    "Python.check.executor": "Debug",
-    "Python.check_test.executor": "Run",
-    "Python.common.executor": "Run",
-    "Python.config.executor": "Run",
-    "Python.generate.executor": "Debug",
-    "Python.help.executor": "Run",
-    "Python.huy.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.menu.executor": "Run",
-    "Python.menu_handler.executor": "Run",
-    "Python.setup.executor": "Run",
-    "Python.start.executor": "Run",
-    "Python.tree.executor": "Run",
-    "Python.username_check.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "main",
-    "last_opened_file_path": "F:/PythonProject/UsernameBot/diagrams",
-    "settings.editor.selected.configurable": "project.propVCSSupport.DirectoryMappings"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Python.__init__.executor&quot;: &quot;Run&quot;,
+    &quot;Python._main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.bot_setup.executor&quot;: &quot;Run&quot;,
+    &quot;Python.check.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.check_test.executor&quot;: &quot;Run&quot;,
+    &quot;Python.common.executor&quot;: &quot;Run&quot;,
+    &quot;Python.config.executor&quot;: &quot;Run&quot;,
+    &quot;Python.generate.executor&quot;: &quot;Debug&quot;,
+    &quot;Python.help.executor&quot;: &quot;Run&quot;,
+    &quot;Python.huy.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.menu.executor&quot;: &quot;Run&quot;,
+    &quot;Python.menu_handler.executor&quot;: &quot;Run&quot;,
+    &quot;Python.setup.executor&quot;: &quot;Run&quot;,
+    &quot;Python.start.executor&quot;: &quot;Run&quot;,
+    &quot;Python.tree.executor&quot;: &quot;Run&quot;,
+    &quot;Python.username_check.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;F:/PythonProject/UsernameBot/diagrams&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;project.propVCSSupport.DirectoryMappings&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="F:\PythonProject\UsernameBot\diagrams" />
