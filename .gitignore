@@ -6,6 +6,7 @@ bot/config.py
 .env
 skills.md
 
+.idea/
 .idea/workspace.xml
 
 bot/bot.log
