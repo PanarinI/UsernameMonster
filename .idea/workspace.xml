@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6dc3dfd3-23d6-43ef-80e6-f1e226db0f26" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/bot/bot.log" beforeDir="false" afterPath="$PROJECT_DIR$/bot/bot.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot/utils/logger.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot/utils/logger.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
