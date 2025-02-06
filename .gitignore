@@ -10,3 +10,4 @@ skills.md
 .idea/workspace.xml
 
 bot/bot.log
+__pycache__/
