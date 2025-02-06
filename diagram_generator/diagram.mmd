@@ -1,43 +1,44 @@
 flowchart TD
-  %% Сценарий прямой проверки username
-  subgraph Direct_Check[Проверка username]
-    DC1[Пользователь вводит username] --> DC2[handlers/check.py]
-    DC2 --> DC3[Вызов services/check.py]
-    DC3 --> DC_out[Возврат результата проверки пользователю]
+  %% Главный поток
+  A[Пользователь запускает /start] --> B[Отображается Главное Меню]
+
+  B --> C[Нажата кнопка Сгенерировать username callback: generate]
+  B --> D[Нажата кнопка Проверить username callback: check]
+  B --> E[Нажата кнопка Помощь callback: help]
+
+  %% Подграф генерации username
+  subgraph Генерация Username
+    C --> F[Bot: Введите тему/контекст для генерации username]
+    F --> G[Устанавливается состояние waiting_for_context]
+    G --> H[Пользователь вводит контекст]
+    H --> I[Вызов services.generate.get_available_usernames]
+    I --> J[Генерация username через OpenAI API]
+    J --> K[Проверка доступности каждого username]
+    K --> L[Фильтрация и выбор только доступных username]
+    L --> M[Bot: Вывод сгенерированных username + inline клавиатура]
+    M --> N{Выбрана кнопка}
+    N -- Повторить генерацию --> F
+    N -- Назад в главное меню --> B
   end
 
-  %% Сценарий генерации username
-  subgraph Generation[Генерация username]
-    G1[Пользователь вводит контекст: ключевые слова] --> G2[handlers/generate.py]
-    G2 --> G3[services/generate.py]
-    G3 --> G4[Запрос к OpenAI API: chat.completions.create]
-    G4 --> G5[Получение списка сгенерированных username]
-    G5 --> G6[Для каждого username: вызов services/check.py]
-    G6 --> G7[Фильтрация: выбираем только Свободен]
-    G7 --> G_out[Возврат итогового списка пользователю]
+  %% Подграф проверки username
+  subgraph Проверка Username
+    D --> O[Bot: Введите username для проверки без @]
+    O --> P[Устанавливается состояние waiting_for_username]
+    P --> Q[Пользователь вводит username]
+    Q --> R[Проверка валидности regex]
+    R -- Некорректный формат --> S[Bot: Некорректный username. Попробуйте ещё раз.]
+    R -- Корректный формат --> T[Вызов services.check.check_username_availability]
+    T --> U[Проверка через Telegram API и t.me]
+    U --> V[Bot: Вывод результата проверки + inline клавиатура]
+    V --> W{Выбрана кнопка}
+    W -- Проверить другое имя --> O
+    W -- Назад в главное меню --> B
   end
 
-  %% Общий модуль проверки username
-  subgraph Check_Service[services/check.py: Проверка username]
-    CS1[Запрос к Telegram API: get_chat] --> CS2{Результат Telegram API}
-    CS2 -- chat найден --> CS3[Результат: Занято]
-    CS2 -- chat not found --> CS4[Выполнить HTTP GET к t.me]
-    CS4 --> CS5{Анализ HTML ответа t.me}
-    CS5 -- 404 --> CS6[Результат: Свободен]
-    CS5 -- найден tgme_page_title или 'If you have Telegram, you can contact' --> CS7[Результат: Занято]
-    CS5 -- найден Telegram: Contact @username без tgme_page_title --> CS6
-    CS5 -- нет совпадений --> CS8[Результат: Невозможно определить]
+  %% Подграф помощи
+  subgraph Помощь
+    E --> X[Bot: Вывод справочной информации]
+    X --> Y[Inline клавиатура с кнопкой Назад в главное меню]
+    Y --> B
   end
-
-  %% Связь вызова общего модуля проверки
-  DC3 --> CS1
-  G6 --> CS1
-
-  %% Вывод результата для прямой проверки
-  CS3 --- DC_out
-  CS6 --- DC_out
-  CS7 --- DC_out
-  CS8 --- DC_out
-
-  %% Фильтрация в генерации: учитываем только результат "Свободен"
-  CS6 --- G7

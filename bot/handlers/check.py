@@ -1,25 +1,45 @@
-from aiogram import Router, types, F
+import asyncio
+from aiogram import Router, types, F, Bot
 from aiogram.filters import Command
-from aiogram import Bot
 from aiogram.fsm.context import FSMContext
-import re
+from .states import CheckUsernameStates
+from keyboards.check import check_result_kb
+from keyboards.main_menu import main_menu
 from services.check import check_username_availability
-from .states import CheckUsernameStates  # Импорт состояний
-from keyboards.check import check_result_kb  # Импорт клавиатуры
-from keyboards.main_menu import main_menu  # Импорт клавиатуры главного меню
+import re
 
 check_router = Router()  # Создаём Router
 
 
+
+
+### ✅ 1. ОБРАБОТЧИК КОМАНДЫ /check
+@check_router.message(Command("check"))
+async def cmd_check_slash(message: types.Message, state: FSMContext):
+    """
+    Обработчик для команды /check.
+    """
+    await state.clear()  # ⛔ Принудительно очищаем ВСЕ состояния
+    await asyncio.sleep(0.05)  # 🔄 Даем FSM время сброситься
+
+    await message.answer("Введите username для проверки (без @):")
+    await state.set_state(CheckUsernameStates.waiting_for_username)
+
+### ✅ 2. ОБРАБОТЧИК INLINE-КНОПКИ "Проверить username"
 @check_router.callback_query(F.data == "check")
 async def cmd_check(query: types.CallbackQuery, state: FSMContext):
     """
     Обработчик для кнопки "Проверить username".
     """
+    await state.clear()  # ⛔ Очищаем состояние перед новой командой
+    await asyncio.sleep(0.05)  # 🔄 Даем FSM время очиститься
+
     await query.message.answer("Введите username для проверки (без @):")
     await state.set_state(CheckUsernameStates.waiting_for_username)
     await query.answer()
 
+
+### ✅ 3. ПРОВЕРКА КОРРЕКТНОСТИ ВВЕДЕННОГО USERNAME
 def is_valid_username(username: str) -> bool:
     """
     Проверяет, соответствует ли username правилам Telegram.
@@ -28,13 +48,21 @@ def is_valid_username(username: str) -> bool:
     return bool(re.match(pattern, username))
 
 
+### ✅ 4. ОБРАБОТЧИК ВВОДА USERNAME + ЗАЩИТА ОТ КОМАНД
 @check_router.message(CheckUsernameStates.waiting_for_username)
 async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     """
     Обработчик для введённого username.
     Проверяет корректность и доступность username.
     """
+
     username = message.text.strip()
+
+    # ❗️ Если пользователь вводит КОМАНДУ в этом состоянии – сбрасываем FSM и игнорируем ввод
+    if username.startswith("/"):
+        await state.clear()
+        await message.answer("⚠️ Вы ввели команду вместо username. Введите команду заново.")
+        return
 
     # Проверяем корректность username
     if not is_valid_username(username):
@@ -64,13 +92,19 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
             f"⚠️ Не удалось определить доступность @{username}.",
             reply_markup=check_result_kb()  # Добавляем клавиатуру
         )
-    await state.clear()  # Сброс состояния после завершения
 
+    await state.clear()  # ⛔️ Фикс: Принудительно очищаем состояние после проверки
+
+
+### ✅ 5. ВОЗВРАТ В ГЛАВНОЕ МЕНЮ
 @check_router.callback_query(F.data == "back_to_main")
-async def back_to_main(query: types.CallbackQuery):
+async def back_to_main(query: types.CallbackQuery, state: FSMContext):
     """
     Обработчик для кнопки "Назад в главное меню".
     """
+    await state.clear()  # ⛔ Очистка состояния перед выходом
+    await asyncio.sleep(0.05)
+
     await query.message.answer(
         "Вы вернулись в главное меню.",
         reply_markup=main_menu()  # Показываем главное меню

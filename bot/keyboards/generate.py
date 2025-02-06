@@ -6,7 +6,16 @@ def generate_username_kb(usernames: list) -> InlineKeyboardMarkup:
         for username in usernames # для каждого username в списке usernames -- список создается в process_context_input (handlers.generate)
     ]
     kb_list.append([
-        InlineKeyboardButton(text="Сгенерировать ещё раз", callback_data="generate"),
-        InlineKeyboardButton(text="Назад в главное меню", callback_data="back_to_main")
+        InlineKeyboardButton(text=" Попробовать снова", callback_data="generate"),
+        InlineKeyboardButton(text="🔙 Назад в главное меню", callback_data="back_to_main")
     ])
     return InlineKeyboardMarkup(inline_keyboard=kb_list)
+
+def error_retry_kb() -> InlineKeyboardMarkup:
+    """Клавиатура для ошибки: повторить генерацию или вернуться в главное меню."""
+    kb_list = [
+        [InlineKeyboardButton(text="🔄 Попробовать снова", callback_data="generate")],
+        [InlineKeyboardButton(text="🔙 Назад в главное меню", callback_data="back_to_main")]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=kb_list)
+

@@ -11,3 +11,14 @@ async def cmd_start(message: types.Message):
 
 
 
+
+# @dp.message(Command("check"))
+# async def command_2(message: types.Message):
+ #   await handle_button_2(types.CallbackQuery(message=message, data="check"))
+
+  #  @dp.message(Command("help"))
+   # async def command_2(message: types.Message):
+    #    await handle_button_2(types.CallbackQuery(message=message, data="help"))
+
+
+

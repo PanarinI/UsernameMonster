@@ -1,5 +1,5 @@
 Команда: 
-mmdc -i diagram.mmd -o diagram.svg
+mmdc -i diagram_generator/diagram.mmd -o diagram.svg
 
 PATH=C:\Program Files\nodejs;C:\Users\IG\AppData\Roaming\npm;%PATH%
 

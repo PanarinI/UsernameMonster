@@ -1,34 +1,33 @@
-import openai
 from aiogram import Bot
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import logging
-from services.check import check_username_availability # Импорт функции проверки (инкапсулирует два этапа)
-from handlers.check import is_valid_username # Функция для валидации формата username
+from utils.logger import setup_logging
 import config
-from config import setup_logging
+from services.check import check_username_availability  # Проверка username
+from handlers.check import is_valid_username  # Валидация username
 
 # Загрузка переменных окружения и настройка логирования
 load_dotenv()
-setup_logging()
+#setup_logging()
 
 # Получение ключей API из окружения
 API_KEY = os.getenv("API_KEY")
 BASE_URL = os.getenv("BASE_URL")
 
-# Создание клиента OpenAI для отправки запросов к API
+# Создание клиента OpenAI для генерации username
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
 async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_COUNT) -> list[str]:
     """
-    Генерирует список username на основе контекста.
+    Генерирует `n` username на основе контекста.
     """
-    logging.info(f"Генерация username: context='{context}', n={n}")
+    logging.info(f"📝 Генерация username: context='{context}', n={n}")
 
     prompt = config.PROMPT.format(n=n, context=context)
 
-    # Запрос к модели OpenAI
+    # Запрос к AI API
     response = client.chat.completions.create(
         model=config.MODEL,
         messages=[{"role": "user", "content": prompt}],
@@ -38,51 +37,69 @@ async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_CO
 
     logging.debug(f"API Response: {response}")
 
-    # Если в ответе присутствует нужное поле, извлекаем сгенерированные username
-    if response.choices and response.choices[0].message and response.choices[0].message.content: #  если в ответе есть текст с username
-        usernames_raw = response.choices[0].message.content.strip() # извлекаем его
+    # Если API вернул данные, извлекаем username
+    if response.choices and response.choices[0].message and response.choices[0].message.content:
+        usernames_raw = response.choices[0].message.content.strip()
     else:
-        logging.warning("Ответ от API не содержит ожидаемых данных.")
+        logging.warning("⚠️ API не вернул username.")
         return []
 
-    # Парсинг ответа: разделяем строку по запятым и удаляем лишние пробелы
+    # Парсинг ответа: разделяем строку по запятым и фильтруем валидные username
     usernames = [u.strip() for u in usernames_raw.split(",")]
+    valid_usernames = [username for username in usernames if is_valid_username(username)]
 
-    # Фильтрация – оставляем только те username, которые соответствуют требованиям валидации
-    return [username for username in usernames if is_valid_username(username)]
+    return valid_usernames
 
 async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str]:
     """
-    Возвращает `n` доступных username.
+    Возвращает `n` доступных username, избегая повторных проверок.
     """
-    logging.info(f"Поиск {n} доступных username для контекста: '{context}'")
+    logging.info(f"🔎 Поиск {n} доступных username для контекста: '{context}'")
 
-    # Множество для хранения уникальных доступных username
     available_usernames = set()
+    checked_usernames = set()  # Список уже проверенных username
+    attempts = 0  # Количество попыток генерации
+    empty_responses = 0  # Количество пустых ответов AI
 
-    # Пока не набрано нужное количество доступных username
-    while len(available_usernames) < n:
-        # Генерируем n вариантов username по заданному контексту
+    while len(available_usernames) < n and attempts < config.GEN_ATTEMPTS:
+        attempts += 1
+        logging.info(f"🔄 Попытка {attempts}/{config.GEN_ATTEMPTS}")
+
+        # Генерация username
         usernames = await generate_usernames(context, n=config.GENERATED_USERNAME_COUNT)
-        logging.debug(f"Сгенерированные username: {usernames}")
-        # Если генерация не вернула ни одного варианта – выходим
+        logging.debug(f"📜 Сгенерированные username: {usernames}")
+
+        # Если API не вернул username
         if not usernames:
-            logging.error("API не вернул username. Останавливаем повторные запросы.")
-            return []
+            empty_responses += 1
+            logging.warning(f"⚠️ AI не дал username ({empty_responses}/{config.MAX_EMPTY_RESPONSES})")
+
+            # Прерывание после нескольких пустых ответов
+            if empty_responses >= config.MAX_EMPTY_RESPONSES:
+                logging.error("❌ AI отказывается генерировать username. Останавливаем процесс.")
+                break
+
+            continue
 
         for username in usernames:
-            # Если данный username уже добавлен, пропускаем его
-            if username in available_usernames:
+            # Пропуск уже проверенных username
+            if username in checked_usernames:
                 continue
-            # Вызываем функцию проверки доступности
-            result = await check_username_availability(bot, username)
-            logging.debug(f"Проверка username '{username}': {result}")
 
-            # Если результат проверки равен "Свободно", добавляем его в итоговое множество
+            # Добавляем в список проверенных
+            checked_usernames.add(username)
+
+            # Проверка доступности
+            result = await check_username_availability(bot, username)
+            logging.debug(f"🔍 Проверка username '{username}': {result}")
+
             if result == "Свободно":
                 available_usernames.add(username)
-                if len(available_usernames) >= n:
-                    break
 
-    logging.info(f"Итоговые доступные username: {available_usernames}")
+            # Достаточно доступных username
+            if len(available_usernames) >= n:
+                break
+
+    logging.info(f"✅ Итоговые доступные username: {available_usernames}")
     return list(available_usernames)
+

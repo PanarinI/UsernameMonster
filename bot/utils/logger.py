@@ -1,13 +1,12 @@
 import logging
+from config import LOG_LEVEL, LOG_FORMAT, LOG_FILE
 
-# Настройки логирования
-logging.basicConfig(
-    level=logging.INFO,  # INFO = логируем всё важное, ERROR = только ошибки
-    format="%(asctime)s - [%(levelname)s] - %(message)s",
-    filename="bot.log",  # Лог записывается в этот файл
-    filemode="a"  # "a" = дописывать в файл, "w" = каждый раз перезаписывать
-)
+# Функция для настройки логирования
+def setup_logging():
+    logging.basicConfig(
+        level=LOG_LEVEL,
+        format=LOG_FORMAT,
+        filename=LOG_FILE if LOG_FILE else None,
+        filemode="w" if LOG_FILE else None
+    )
 
-# Функция логирования
-def log_action(action: str):
-    logging.info(action)
