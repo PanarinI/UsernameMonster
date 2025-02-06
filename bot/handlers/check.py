@@ -4,13 +4,11 @@ from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from .states import CheckUsernameStates
 from keyboards.check import check_result_kb
-from keyboards.main_menu import main_menu
+from keyboards.main_menu import main_menu_kb, back_to_main_kb
 from services.check import check_username_availability
 import re
 
 check_router = Router()  # Создаём Router
-
-
 
 
 ### ✅ 1. ОБРАБОТЧИК КОМАНДЫ /check
@@ -22,7 +20,9 @@ async def cmd_check_slash(message: types.Message, state: FSMContext):
     await state.clear()  # ⛔ Принудительно очищаем ВСЕ состояния
     await asyncio.sleep(0.05)  # 🔄 Даем FSM время сброситься
 
-    await message.answer("Введите username для проверки (без @):")
+    await message.answer("Введите username для проверки (без @):",
+                         reply_markup=back_to_main_kb() # Добавляем кнопку "🔙 В меню"
+    )
     await state.set_state(CheckUsernameStates.waiting_for_username)
 
 ### ✅ 2. ОБРАБОТЧИК INLINE-КНОПКИ "Проверить username"
@@ -34,10 +34,11 @@ async def cmd_check(query: types.CallbackQuery, state: FSMContext):
     await state.clear()  # ⛔ Очищаем состояние перед новой командой
     await asyncio.sleep(0.05)  # 🔄 Даем FSM время очиститься
 
-    await query.message.answer("Введите username для проверки (без @):")
+    await query.message.answer("Введите username для проверки (без @):",
+                               reply_markup=back_to_main_kb()
+    )
     await state.set_state(CheckUsernameStates.waiting_for_username)
     await query.answer()
-
 
 ### ✅ 3. ПРОВЕРКА КОРРЕКТНОСТИ ВВЕДЕННОГО USERNAME
 def is_valid_username(username: str) -> bool:
@@ -107,6 +108,6 @@ async def back_to_main(query: types.CallbackQuery, state: FSMContext):
 
     await query.message.answer(
         "Вы вернулись в главное меню.",
-        reply_markup=main_menu()  # Показываем главное меню
+        reply_markup=main_menu_kb()  # Показываем главное меню
     )
     await query.answer()
