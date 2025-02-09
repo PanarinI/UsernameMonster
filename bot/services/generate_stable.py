@@ -52,13 +52,13 @@ async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_CO
 
 async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str]:
     """
-    Возвращает `n` доступных username, игнорируя неизвестные статусы.
+    Возвращает `n` доступных username, избегая повторных проверок.
     """
     logging.info(f"🔎 Поиск {n} доступных username для контекста: '{context}'")
 
     available_usernames = set()
-    checked_usernames = set()  # Уже проверенные username
-    attempts = 0  # Счетчик попыток генерации
+    checked_usernames = set()  # Список уже проверенных username
+    attempts = 0  # Количество попыток генерации
     empty_responses = 0  # Количество пустых ответов AI
 
     while len(available_usernames) < n and attempts < config.GEN_ATTEMPTS:
@@ -66,18 +66,15 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
         logging.info(f"🔄 Попытка {attempts}/{config.GEN_ATTEMPTS}")
 
         # Генерация username
-        try:
-            usernames = await generate_usernames(context, n=config.GENERATED_USERNAME_COUNT)
-        except Exception as e:
-            logging.error(f"❌ Ошибка генерации username через OpenAI: {e}")
-            return []  # Ошибка в API AI - прерываем генерацию
-
+        usernames = await generate_usernames(context, n=config.GENERATED_USERNAME_COUNT)
         logging.debug(f"📜 Сгенерированные username: {usernames}")
 
+        # Если API не вернул username
         if not usernames:
             empty_responses += 1
             logging.warning(f"⚠️ AI не дал username ({empty_responses}/{config.MAX_EMPTY_RESPONSES})")
 
+            # Прерывание после нескольких пустых ответов
             if empty_responses >= config.MAX_EMPTY_RESPONSES:
                 logging.error("❌ AI отказывается генерировать username. Останавливаем процесс.")
                 break
@@ -85,30 +82,24 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
             continue
 
         for username in usernames:
+            # Пропуск уже проверенных username
             if username in checked_usernames:
-                continue  # Пропускаем уже проверенные
+                continue
 
+            # Добавляем в список проверенных
             checked_usernames.add(username)
 
-            try:
-                result = await check_username_availability(bot, username)
-            except Exception as e:
-                logging.error(f"❌ Ошибка при проверке {username}: {e}")
-                continue  # Ошибка на сервере Fragment или бота - просто пропускаем
-
+            # Проверка доступности
+            result = await check_username_availability(bot, username)
             logging.debug(f"🔍 Проверка username '{username}': {result}")
 
             if result == "Свободно":
                 available_usernames.add(username)
 
+            # Достаточно доступных username
             if len(available_usernames) >= n:
                 break
 
-    if not available_usernames:
-        logging.warning("⚠️ Не найдено доступных username.")
-    else:
-        logging.info(f"✅ Итоговые доступные username: {available_usernames}")
-
+    logging.info(f"✅ Итоговые доступные username: {available_usernames}")
     return list(available_usernames)
-
 

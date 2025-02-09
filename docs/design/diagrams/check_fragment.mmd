@@ -1,0 +1,31 @@
+flowchart TD
+  %% Подграф для проверки username
+  subgraph Проверка_username
+    A[Пользователь вводит username] --> B[handlers/check.py]
+    B --> C[services/check.py]
+    C --> D[Запрос к Telegram API: get_chat]
+    D -- "chat найден" --> E[Username занят]
+    D -- "Forbidden (бот кикнут)" --> E
+    D -- "chat not found" --> F[Запрос к Fragment]
+
+    %% Подграф для проверки через Fragment
+    subgraph Проверка_через_Fragment
+      F --> G[Запрос к fragment.com/username/username]
+      G -- "Редирект на ?query={username}" --> H[Username свободен]
+      G -- "Нет редиректа" --> I[Парсим страницу]
+
+      %% Анализ страницы username
+      I --> J{tm-section-header-status}
+      J -- "Available" --> K[Доступно для покупки]
+      J -- "Sold" --> L[Продано]
+      J -- "Taken" --> E
+      J -- "Нет данных" --> M[Невозможно определить]
+    end
+
+    %% Итоговое принятие решений
+    E --> N[Возврат статуса пользователю]
+    H --> N
+    K --> N
+    L --> N
+    M --> N
+  end
