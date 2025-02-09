@@ -4,4 +4,5 @@ import subprocess
 mmdc_path = r"C:\Users\IG\AppData\Roaming\npm\mmdc.cmd"
 
 # Запускаем Mermaid CLI
-subprocess.run([mmdc_path, "-i", "diagram_generator\diagram.mmd", "-o", "diagram_generator\diagram.svg"], shell=True)
+subprocess.run([mmdc_path, "-i", r"diagram_generator\diagram.mmd", "-o", r"diagram_generator\diagram.svg"], shell=True)
+

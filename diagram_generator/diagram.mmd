@@ -1,44 +1,31 @@
 flowchart TD
-  %% Главный поток
-  A[Пользователь запускает /start] --> B[Отображается Главное Меню]
+  %% Подграф для проверки username
+  subgraph Проверка_username
+    A[Пользователь вводит username] --> B[handlers/check.py]
+    B --> C[services/check.py]
+    C --> D[Запрос к Telegram API: get_chat]
+    D -- "chat найден" --> E[Username занят]
+    D -- "Forbidden (бот кикнут)" --> E
+    D -- "chat not found" --> F[Запрос к Fragment]
 
-  B --> C[Нажата кнопка Сгенерировать username callback: generate]
-  B --> D[Нажата кнопка Проверить username callback: check]
-  B --> E[Нажата кнопка Помощь callback: help]
+    %% Подграф для проверки через Fragment
+    subgraph Проверка_через_Fragment
+      F --> G[Запрос к fragment.com/username/username]
+      G -- "Редирект на ?query={username}" --> H[Username свободен]
+      G -- "Нет редиректа" --> I[Парсим страницу]
 
-  %% Подграф генерации username
-  subgraph Генерация Username
-    C --> F[Bot: Введите тему/контекст для генерации username]
-    F --> G[Устанавливается состояние waiting_for_context]
-    G --> H[Пользователь вводит контекст]
-    H --> I[Вызов services.generate.get_available_usernames]
-    I --> J[Генерация username через OpenAI API]
-    J --> K[Проверка доступности каждого username]
-    K --> L[Фильтрация и выбор только доступных username]
-    L --> M[Bot: Вывод сгенерированных username + inline клавиатура]
-    M --> N{Выбрана кнопка}
-    N -- Повторить генерацию --> F
-    N -- Назад в главное меню --> B
-  end
+      %% Анализ страницы username
+      I --> J{tm-section-header-status}
+      J -- "Available" --> K[Доступно для покупки]
+      J -- "Sold" --> L[Продано]
+      J -- "Taken" --> E
+      J -- "Нет данных" --> M[Невозможно определить]
+    end
 
-  %% Подграф проверки username
-  subgraph Проверка Username
-    D --> O[Bot: Введите username для проверки без @]
-    O --> P[Устанавливается состояние waiting_for_username]
-    P --> Q[Пользователь вводит username]
-    Q --> R[Проверка валидности regex]
-    R -- Некорректный формат --> S[Bot: Некорректный username. Попробуйте ещё раз.]
-    R -- Корректный формат --> T[Вызов services.check.check_username_availability]
-    T --> U[Проверка через Telegram API и t.me]
-    U --> V[Bot: Вывод результата проверки + inline клавиатура]
-    V --> W{Выбрана кнопка}
-    W -- Проверить другое имя --> O
-    W -- Назад в главное меню --> B
-  end
-
-  %% Подграф помощи
-  subgraph Помощь
-    E --> X[Bot: Вывод справочной информации]
-    X --> Y[Inline клавиатура с кнопкой Назад в главное меню]
-    Y --> B
+    %% Итоговое принятие решений
+    E --> N[Возврат статуса пользователю]
+    H --> N
+    K --> N
+    L --> N
+    M --> N
   end
