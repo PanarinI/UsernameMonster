@@ -1,5 +1,4 @@
 # TECH_FLOW: Техническая логика работы бота
-
 ## 1. Общий процесс работы
 Бот выполняет два основных сценария:
 
@@ -7,7 +6,7 @@
 1. Пользователь вводит username.
 2. `handlers/check.py` принимает ввод и передаёт его в `services/check.py`.
 3. `services/check.py` делает запрос к **Telegram API** (`get_chat`).
-4. Если Telegram API возвращает ошибку `chat not found`, выполняется HTTP-запрос к **t.me API** через `aiohttp`.
+4. Если Telegram API возвращает ошибку `chat not found`, выполняется HTTP-запрос к fragment.com через `aiohttp`. ## ранее t.me API, перестало работать 
 5. **Возвращаемые статусы**:
    - "Свободно"
    - "Занято"

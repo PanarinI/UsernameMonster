@@ -76,46 +76,25 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
         )
         return
 
-    # Если username корректен, проверяем username
+    # Если username корректен, проверяем его доступность
     result = await check_username_availability(bot, username)
-
     if result == "Свободно":
         await message.answer(
             f"✅ Имя @{username} свободно!",
-            reply_markup=check_result_kb()
+            reply_markup=check_result_kb()  # Добавляем клавиатуру
         )
     elif result == "Занято":
         await message.answer(
             f"❌ Имя @{username} занято.",
-            reply_markup=check_result_kb()
-        )
-    elif result == "Продано":
-        await message.answer(
-            f"💰 Имя @{username} уже продано и больше недоступно.",
-            reply_markup=check_result_kb()
-        )
-    elif result == "Доступно для покупки":
-        await message.answer(
-            f"Имя @{username} занято, но доступно для покупки на Fragment",
-            reply_markup=check_result_kb()
-        )
-    elif result == "Свободно, но не на продаже":
-        await message.answer(
-            f"✅ Имя @{username} свободно!",
-            reply_markup=check_result_kb()
-        )
-    elif result == "Недоступно":
-        await message.answer(
-            f"⚠️ Имя @{username} занято, но не продаётся (Not for sale).",
-            reply_markup=check_result_kb()
+            reply_markup=check_result_kb()  # Добавляем клавиатуру
         )
     else:
         await message.answer(
             f"⚠️ Не удалось определить доступность @{username}.",
-            reply_markup=check_result_kb()
+            reply_markup=check_result_kb()  # Добавляем клавиатуру
         )
 
-    await state.clear()  # ⛔️ Очищаем состояние после проверки
+    await state.clear()  # ⛔️ Фикс: Принудительно очищаем состояние после проверки
 
 
 ### ✅ 5. ВОЗВРАТ В ГЛАВНОЕ МЕНЮ

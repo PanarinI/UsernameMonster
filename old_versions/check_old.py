@@ -7,7 +7,10 @@ import ssl
 from aiogram import Bot, Dispatcher, F
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.types import Message
-from config import BOT_TOKEN
+# from config import BOT_TOKEN
+
+
+
 
 # Устанавливаем переменную окружения для SSL
 os.environ["SSL_CERT_FILE"] = certifi.where()
