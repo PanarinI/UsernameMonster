@@ -11,4 +11,4 @@ __pycache__/
 .idea/workspace.xml
 
 bot/bot.log
-database
+bot/database
