@@ -18,7 +18,7 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
     """
     await state.clear()  # Очищаем предыдущее состояние перед новой командой
     await asyncio.sleep(0.05)  # ✅ Даем FSM время сброситься
-    await query.message.answer("Введите тему/контекст для генерации username:", reply_markup=back_to_main_kb())
+    await query.message.answer("Введите тему/контекст для генерации username (макс. 200 знаков):", reply_markup=back_to_main_kb())
     await state.set_state(GenerateUsernameStates.waiting_for_context)
     await query.answer()  # Telegram требует подтверждения, что callback обработан.
 
@@ -40,9 +40,24 @@ async def cmd_generate_slash(message: types.Message, state: FSMContext):
 async def process_context_input(message: types.Message, bot: Bot, state: FSMContext):
     """
     Обработчик для введённого контекста.
-    Генерирует и проверяет username.
+    Проверяет его длину, отправляет предупреждение (если нужно), а затем запускает генерацию и проверку username.
     """
     context_text = message.text.strip()
+
+    # ✅ Проверяем длину контекста
+    if len(context_text) > config.MAX_CONTEXT_LENGTH:
+        logging.warning(
+            f"⚠️ Контекст слишком длинный ({len(context_text)} символов), обрезаем до {config.MAX_CONTEXT_LENGTH}.")
+
+        # Отправляем пользователю предупреждение
+        await message.answer(
+            f"⚠️ Контекст слишком длинный ({len(context_text)} символов). "
+            f"Обрезаю до {config.MAX_CONTEXT_LENGTH} символов."
+        )
+
+        # Обрезаем контекст перед генерацией
+        context_text = context_text[:config.MAX_CONTEXT_LENGTH]
+
     try:
         usernames = await asyncio.wait_for(
             get_available_usernames(bot, context_text, n=config.AVAILABLE_USERNAME_COUNT),
