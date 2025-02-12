@@ -43,9 +43,10 @@ async def cmd_check(query: types.CallbackQuery, state: FSMContext):
 ### ✅ 3. ПРОВЕРКА КОРРЕКТНОСТИ ВВЕДЕННОГО USERNAME
 def is_valid_username(username: str) -> bool:
     """
-    Проверяет, соответствует ли username правилам Telegram.
+    Проверяет, соответствует ли username правилам Telegram, в т.ч. не начинается и не заканчивается на нижнее подчеркивание.
     """
-    pattern = r"^[a-zA-Z0-9_]{5,32}$"
+    # Регулярное выражение
+    pattern = r"^(?!_)[a-zA-Z0-9_]{5,32}(?<!_)$"
     return bool(re.match(pattern, username))
 
 
@@ -79,41 +80,41 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     # Если username корректен, проверяем username
     result = await check_username_availability(bot, username)
 
+    # ✅ Защита от None
+    if result is None:
+        await message.answer("⚠️ Ошибка: не удалось проверить username. Попробуйте позже.")
+        return
+
+    # 🛑 Если Telegram API заблокировал запросы
+    if result.startswith("FLOOD_CONTROL"):
+        retry_seconds = int(result.split(":")[1])
+        hours = retry_seconds // 3600
+        minutes = (retry_seconds % 3600) // 60
+
+        await message.answer(
+            f"🚫 Бот временно заблокирован в Telegram API из-за слишком частых проверок.\n"
+            f"Попробуйте снова через {hours} ч {minutes} мин.",
+            reply_markup=main_menu_kb()  # Главное меню
+        )
+
+        await state.clear()  # Очистка состояния
+        return
+
+    # 🟢 Логика ответов
     if result == "Свободно":
-        await message.answer(
-            f"✅ Имя @{username} свободно!",
-            reply_markup=check_result_kb()
-        )
+        await message.answer(f"✅ Имя @{username} свободно!", reply_markup=check_result_kb())
     elif result == "Занято":
-        await message.answer(
-            f"❌ Имя @{username} занято.",
-            reply_markup=check_result_kb()
-        )
+        await message.answer(f"❌ Имя @{username} занято.", reply_markup=check_result_kb())
     elif result == "Продано":
-        await message.answer(
-            f"💰 Имя @{username} уже продано и больше недоступно.",
-            reply_markup=check_result_kb()
-        )
+        await message.answer(f"💰 Имя @{username} уже продано и больше недоступно.", reply_markup=check_result_kb())
     elif result == "Доступно для покупки":
-        await message.answer(
-            f"Имя @{username} занято, но доступно для покупки на Fragment",
-            reply_markup=check_result_kb()
-        )
+        await message.answer(f"Имя @{username} занято, но доступно для покупки на Fragment", reply_markup=check_result_kb())
     elif result == "Свободно, но не на продаже":
-        await message.answer(
-            f"✅ Имя @{username} свободно!",
-            reply_markup=check_result_kb()
-        )
+        await message.answer(f"✅ Имя @{username} свободно!", reply_markup=check_result_kb())
     elif result == "Недоступно":
-        await message.answer(
-            f"⚠️ Имя @{username} занято, но не продаётся (Not for sale).",
-            reply_markup=check_result_kb()
-        )
+        await message.answer(f"⚠️ Имя @{username} занято, но не продаётся (Not for sale).", reply_markup=check_result_kb())
     else:
-        await message.answer(
-            f"⚠️ Не удалось определить доступность @{username}.",
-            reply_markup=check_result_kb()
-        )
+        await message.answer(f"⚠️ Не удалось определить доступность @{username}.", reply_markup=check_result_kb())
 
     await state.clear()  # ⛔️ Очищаем состояние после проверки
 

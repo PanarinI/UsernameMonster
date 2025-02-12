@@ -13,7 +13,7 @@ bot = Bot(token=BOT_TOKEN)
 if BOT_TOKEN is None:
     raise ValueError("BOT_TOKEN not found in .env file")
 
-# Создаём объект диспетчера (обратите внимание, что без параметра bot в Dispatcher)
+# Создаём объект диспетчера (без параметра bot в Dispatcher)
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)  # Здесь не передаем bot как позиционный аргумент
 dp.bot = bot  # Привязываем объект бота к диспетчеру вручную

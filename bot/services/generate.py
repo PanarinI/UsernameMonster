@@ -7,6 +7,7 @@ import config
 from services.check import check_username_availability  # Проверка username
 from handlers.check import is_valid_username  # Валидация username
 from database.database import save_username_to_db
+from aiogram.exceptions import TelegramRetryAfter
 
 # Загрузка переменных окружения и настройка логирования
 load_dotenv()
@@ -83,10 +84,10 @@ async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_CO
         return [], "Неизвестно"
 
 
-
-async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str]:
+async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str] | str:
     """
-    Возвращает `n` доступных username, игнорируя неизвестные статусы.
+    Возвращает `n` доступных username по контексту
+    Генерирует и проверяет имена по мере необходимости.
     """
     logging.info(f"🔎 Поиск {n} доступных username для контекста: '{context}'")
 
@@ -106,8 +107,6 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
             logging.error(f"❌ Ошибка генерации username через OpenAI: {e}")
             return []  # Ошибка в API AI - прерываем генерацию
 
-        logging.debug(f"📜 Сгенерированные username: {usernames} ({type(usernames)})")
-
         if not usernames:
             empty_responses += 1
             logging.warning(f"⚠️ AI не дал username ({empty_responses}/{config.MAX_EMPTY_RESPONSES})")
@@ -116,17 +115,9 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
                 logging.error("❌ AI отказывается генерировать username. Останавливаем процесс.")
                 break
 
-            continue
+            continue # Попытка генерации нового списка
 
         for username in usernames:
-            if isinstance(username, list):  # Если вдруг вложенный список
-                logging.warning(f"⚠️ В username попал список: {username}, берем первый элемент")
-                username = username[0]
-
-            if not isinstance(username, str):
-                logging.warning(f"⚠️ Преобразуем username в строку: {username}")
-                username = str(username)
-
             if username in checked_usernames:
                 continue  # Пропускаем уже проверенные
 
@@ -134,19 +125,29 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
 
             try:
                 result = await check_username_availability(bot, username)
+
+                # 🛑 Если поймали `FLOOD_CONTROL`, сразу возвращаем его, чтобы бот остановился
+                if result.startswith("FLOOD_CONTROL"):
+                    logging.error(f"🚫 Flood Control! Остановка с сообщением: {result}")
+                    return result
+
             except Exception as e:
                 logging.error(f"❌ Ошибка при проверке {username}: {e}")
                 continue  # Ошибка на сервере Fragment или бота - просто пропускаем
 
             logging.debug(f"🔍 Проверка username '{username}': {result}")
 
-            await save_username_to_db(username=username, status=result, category=category, context=context)
-
             if result == "Свободно":
                 available_usernames.add(username)
 
+            await save_username_to_db(username=username, status=result, category=category, context=context, llm=config.MODEL)
+
             if len(available_usernames) >= n:
-                break
+                break  # Выходим из цикла, если набрали нужное количество
+
+            # Если все имена уже проверены и не хватает доступных, генерируем новый список
+        if len(available_usernames) < n:
+            logging.info("🔄 Генерация новых имен, так как не хватает доступных.")
 
     if not available_usernames:
         logging.warning("⚠️ Не найдено доступных username.")

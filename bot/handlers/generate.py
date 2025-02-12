@@ -8,6 +8,7 @@ from keyboards.generate import generate_username_kb, error_retry_kb
 from .states import GenerateUsernameStates
 import config
 from keyboards.main_menu import main_menu_kb, back_to_main_kb
+from aiogram.exceptions import TelegramRetryAfter
 
 generate_router = Router()
 
@@ -63,12 +64,38 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
             get_available_usernames(bot, context_text, n=config.AVAILABLE_USERNAME_COUNT),
             timeout=config.GEN_TIMEOUT
         )
+
+        # 🛑 Если `get_available_usernames()` вернул `FLOOD_CONTROL`, то показываем сообщение и выходим в меню
+        if isinstance(usernames, str) and usernames.startswith("FLOOD_CONTROL"):
+            retry_seconds = int(usernames.split(":")[1])
+            logging.warning(f"🚨 Блокировка API Telegram! Ожидание {retry_seconds} секунд.")
+
+            await message.answer(
+                f"⏳ Бот временно заблокирован за слишком частые запросы.\n"
+                f"Попробуйте снова через {retry_seconds // 60} мин.",
+                reply_markup=main_menu_kb()
+            )
+            await state.clear()
+            return  # Прерываем процесс
+
     except asyncio.TimeoutError:
         logging.info("Время ожидания генерации username истекло.")
         await message.answer("Генерация username заняла слишком много времени. Попробуйте позже.", reply_markup=main_menu_kb())
         await state.clear()
         return
 
+    # ✅ Проверяем блокировку Telegram API
+    if isinstance(usernames, str) and usernames.startswith("FLOOD_CONTROL"):
+        retry_after = usernames.split(":")[1]  # Извлекаем секунды
+        await message.answer(
+            f"🚫 Бот временно заблокирован в Telegram API из-за слишком частых запросов.\n"
+            f"Попробуйте снова через {retry_after} секунд.",
+            reply_markup=main_menu_kb()
+        )
+        await state.clear()
+        return
+
+    #
     if not usernames:
         await message.answer(
             "❌ Не удалось сгенерировать доступные username. Попробуйте снова или вернитесь в главное меню.",

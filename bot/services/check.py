@@ -1,7 +1,8 @@
+import asyncio
 import aiohttp
 import ssl
 from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError
+from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramRetryAfter
 from bs4 import BeautifulSoup
 
 
@@ -29,6 +30,10 @@ async def check_username_availability(bot: Bot, username: str) -> str:
 
         print(f"[ERROR] ❗ Неожиданная ошибка API: {error_message}")
         return "Невозможно определить"
+
+    except TelegramRetryAfter as e:
+        print(f"⏳ Flood Control! Блокировка на {e.retry_after} секунд.")
+        return f"FLOOD_CONTROL:{e.retry_after}"  # Возвращаем время ожидания
 
 ## проверка череза Fragment
 async def check_username_via_fragment(username: str) -> str:
