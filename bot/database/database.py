@@ -13,9 +13,12 @@ DB_CONFIG = {
     "host": os.getenv("HOST")
 }
 
-# Загружаем SQL один раз при запуске
-with open("database/insert_username.sql", "r", encoding="utf-8") as file:
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Путь к `database.py`
+sql_path = os.path.join(BASE_DIR, "insert_username.sql") # выполяем SQL INSERT (добавляем username новой строкой)
+
+with open(sql_path, "r", encoding="utf-8") as file:
     INSERT_SQL = file.read()
+
 
 
 pool = None  # Глобальный пул соединений
