@@ -13,3 +13,12 @@ git push amvera main:master # если не работае git push amvera maste
 git add . # Добавляем все сделанные изменения в данной папке в список проиндексированных
 git commit -m "Описание сделанных изменений"
 git push amvera main:master
+
+
+namehunt_db # название БД
+
+amvera-panarini-cnpg-namehuntdb-rw # для чтения/записи ХОСТ
+
+F:\PostgreSQL\bin\psql.exe -h amvera-panarini-cnpg-namehuntdb-rw -U PanarinI -d namehunt_db -W
+
+amvera-panarini-cnpg-namehuntdb-rw

@@ -13,6 +13,20 @@ DB_CONFIG = {
     "host": os.getenv("HOST")
 }
 
+
+import os
+import logging
+
+logging.basicConfig(level=logging.INFO)  # Устанавливаем уровень логов
+logging.info("✅ Бот запущен!")
+
+logging.info(f"🔍 DATABASE CONFIG:")
+logging.info(f"    HOST = {os.getenv('HOST')}")
+logging.info(f"    DB NAME = {os.getenv('DTBS')}")
+logging.info(f"    USER = {os.getenv('USER')}")
+logging.info(f"    PASSWORD = {'✅' if os.getenv('PSWRD') else '❌ НЕ НАЙДЕНА'}")
+
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  # Путь к `database.py`
 sql_path = os.path.join(BASE_DIR, "insert_username.sql") # выполяем SQL INSERT (добавляем username новой строкой)
 
