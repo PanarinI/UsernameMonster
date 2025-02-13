@@ -1,4 +1,6 @@
 import asyncio
+import sys
+import os
 from setup import bot, dp
 import logging
 from handlers.start import start_router
@@ -8,10 +10,11 @@ from handlers.common import common_router
 from handlers.help import help_router
 from database.database import init_db
 
-# Настройка логирования
-from utils.logger import setup_logging
 
+from utils.logger import setup_logging # Настройка логирования
 setup_logging()  # Вызов перед запуском бота
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))) # для хостинга
 
 async def main():
     """Запуск бота"""

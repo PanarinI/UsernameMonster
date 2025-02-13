@@ -12,4 +12,4 @@ git push amvera main:master # если не работае git push amvera maste
 Верная последовательность
 git add . # Добавляем все сделанные изменения в данной папке в список проиндексированных
 git commit -m "Описание сделанных изменений"
-git push amvera master
+git push amvera main:master
