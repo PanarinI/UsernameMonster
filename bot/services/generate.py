@@ -6,7 +6,7 @@ import logging
 import config
 from services.check import check_username_availability  # Проверка username
 from handlers.check import is_valid_username  # Валидация username
-from database.database import save_username_to_db
+from bot.database.database import save_username_to_db
 from aiogram.exceptions import TelegramRetryAfter
 
 # Загрузка переменных окружения и настройка логирования

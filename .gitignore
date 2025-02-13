@@ -2,7 +2,7 @@
 .venv/Lib
 .venv/
 
-bot/config.py
+#bot/config.py
 .env
 skills.md
 
@@ -11,4 +11,4 @@ __pycache__/
 .idea/workspace.xml
 
 bot/bot.log
-bot/database
+#bot/database
