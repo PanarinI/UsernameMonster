@@ -23,7 +23,7 @@ IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"  # LOCAL_RUN=true �
 # === 2️⃣ Настройки Webhook ===
 WEBHOOK_HOST = os.getenv("WEBHOOK_URL", "https://namehuntbot-panarini.amvera.io")  # Домен Amvera
 WEBHOOK_PATH = "/webhook"
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"  # Полный URL вебхука
+WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")  # Принудительно HTTPS, полный URL вебхука
 
 # === 3️⃣ Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"  # Запускаем сервер на всех интерфейсах
@@ -87,7 +87,10 @@ async def main():
         app.on_shutdown.append(on_shutdown)  # Добавляем обработчик остановки
         logging.info("✅ Зарегистрированные маршруты в приложении:")
         for route in app.router.routes():
-            logging.info(f"➡️ {route.method} {route.path}")
+            try:
+                logging.info(f"➡️ {route.method} {route.path}")
+            except AttributeError:
+                logging.info(f"⚠️ Пропущен маршрут: {route}")
         return app
 
 # === 6️⃣ Запуск ===
