@@ -1,3 +1,4 @@
+import time
 import asyncio
 import sys
 import os
@@ -126,6 +127,5 @@ if __name__ == "__main__":
 
 
     # 🔥 Добавляем бесконечный цикл, чтобы контейнер не завершался
-    import time
     while True:
         time.sleep(3600)
