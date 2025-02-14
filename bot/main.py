@@ -1,5 +1,6 @@
 import time
 import traceback
+import socket
 import asyncio
 import sys
 import os
@@ -13,6 +14,7 @@ from handlers.common import common_router
 from handlers.help import help_router
 from database.database import init_db
 from utils.logger import setup_logging  # Логирование
+
 
 setup_logging()  # Запуск логирования
 
@@ -109,6 +111,17 @@ async def main():
             except AttributeError:
                 logging.info(f"⚠️ Пропущен маршрут: {route}")
         return app
+
+import socket
+
+def check_port(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("0.0.0.0", port)) == 0
+
+port_status = "Открыт" if check_port(WEBAPP_PORT) else "❌ Закрыт"
+print(f"🔎 Проверка порта {WEBAPP_PORT}: {port_status}")
+logging.info(f"🔎 Проверка порта {WEBAPP_PORT}: {port_status}")
+
 
 # === 6️⃣ Запуск ===
 if __name__ == "__main__":
