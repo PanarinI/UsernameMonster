@@ -12,9 +12,9 @@ from handlers.help import help_router
 from database.database import init_db
 from utils.logger import setup_logging  # Логирование
 
-setup_logging()  # Запуск системы логирования
+setup_logging()  # Запуск логирования
 
-# 📌 Добавляем путь к корневой директории (нужно для корректного импорта)
+# ✅ Добавляем путь к корневой директории (нужно для корректного импорта)
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # === 1️⃣ Определяем режим работы ===
@@ -22,20 +22,19 @@ IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"  # LOCAL_RUN=true �
 
 # === 2️⃣ Настройки Webhook ===
 WEBHOOK_HOST = os.getenv("WEBHOOK_URL", "https://namehuntbot-panarini.amvera.io")  # Домен Amvera
-WEBHOOK_PATH = f"/bot/{os.getenv('BOT_TOKEN')}"  # Уникальный Webhook URL
-WEBHOOK_URL = f"https://{os.getenv('WEBHOOK_URL', 'namehuntbot-panarini.amvera.io')}/webhook"
-
+WEBHOOK_PATH = f"/bot/{os.getenv('BOT_TOKEN')}"  # Путь вебхука
+WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"  # Полный URL вебхука
 
 # === 3️⃣ Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"  # Запускаем сервер на всех интерфейсах
-WEBAPP_PORT = int(os.getenv("PORT", 8080))  # Порт из окружения (стандарт 8080)
+WEBAPP_PORT = int(os.getenv("PORT", 8080))  # Порт из окружения (должен быть 443 на сервере)
 
 # === 4️⃣ Функции старта и остановки ===
 async def on_startup():
     """Запуск бота"""
     await init_db()  # Инициализация базы данных
 
-    # 📌 Подключаем все обработчики команд
+    # ✅ Подключаем все обработчики команд
     dp.include_router(start_router)
     dp.include_router(help_router)
     dp.include_router(check_router)
@@ -47,6 +46,7 @@ async def on_startup():
         logging.info("🛑 Webhook отключён! Бот работает через Polling.")
     else:
         try:
+            await bot.delete_webhook()  # ❗ Удаляем старый Webhook перед установкой нового
             await bot.set_webhook(WEBHOOK_URL)  # 🔗 Устанавливаем Webhook
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:
@@ -63,8 +63,8 @@ async def handle_update(request):
     return web.Response()  # Отправляем OK
 
 async def handle_root(request):
+    """Проверка работы бота (если заходишь в браузер)"""
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
-
 
 # === 5️⃣ Основная логика бота ===
 async def main():
