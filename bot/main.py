@@ -116,6 +116,8 @@ if __name__ == "__main__":
         app = loop.run_until_complete(main())  # Запускаем main()
 
         if not IS_LOCAL:
+            print(f"🚀 Запускаем веб-сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
+            logging.info(f"🚀 Запускаем веб-сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
             web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
 
         # 🔥 Бесконечный цикл, чтобы контейнер не завершался
