@@ -27,7 +27,8 @@ WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"  # Полный URL вебхука
 
 # === 3️⃣ Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"  # Запускаем сервер на всех интерфейсах
-WEBAPP_PORT = int(os.getenv("PORT", 8080))  # Порт из окружения (должен быть 443 на сервере)
+WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 443))  # Берём порт из WEBHOOK_PORT
+
 
 # === 4️⃣ Функции старта и остановки ===
 async def on_startup():
