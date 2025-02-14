@@ -3,14 +3,11 @@ import os
 from config import LOG_LEVEL, LOG_FORMAT, LOG_FILE
 
 def setup_logging():
-    handlers = [logging.StreamHandler()]  # Логируем в консоль (stdout) для Amvera
+    handlers = [logging.StreamHandler()]  # 📌 Всегда пишем в stdout (для Amvera)
 
-    # Если локальный запуск — пишем логи в файл
-    if not os.getenv("AMVERA_ENV") and LOG_FILE:
+    # Логируем в файл, только если запущено ЛОКАЛЬНО
+    if LOG_FILE and not os.getenv("AMVERA_ENV"):
         handlers.append(logging.FileHandler(LOG_FILE, mode="w"))
-
-    print("AMVERA_ENV:", os.getenv("AMVERA_ENV"))
-    print("LOG_FILE:", LOG_FILE)
 
     logging.basicConfig(
         level=LOG_LEVEL,
@@ -19,3 +16,4 @@ def setup_logging():
     )
 
     logging.info("✅ Логирование настроено!")
+    print("✅ Логирование настроено!")  # Отдельный print для проверки
