@@ -79,7 +79,7 @@ async def main():
         # 🌐 Webhook (серверный режим)
         app = web.Application()
         app.router.add_get("/", handle_root)  # Обработчик для проверки работы бота
-        app.router.add_post(WEBHOOK_PATH, handle_update)  # Webhook обработчик
+        app.router.add_post("/webhook", handle_update)  # ✅ Фиксированный путь
         app.on_shutdown.append(on_shutdown)  # Добавляем обработчик остановки
         return app
 

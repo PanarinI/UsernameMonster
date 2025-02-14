@@ -32,3 +32,7 @@ curl https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/
 https://namehuntbot-panarini.amvera.io/bot/7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
 
 curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/setWebhook?url=https://namehuntbot-panarini.amvera.io/bot/7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank"
+
+
+curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
+7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
