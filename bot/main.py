@@ -28,7 +28,7 @@ WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")  # 
 
 # === 3️⃣ Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"  # Запускаем сервер на всех интерфейсах
-WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 80))  # Берём порт из WEBHOOK_PORT
+WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 8080))  # Берём порт из WEBHOOK_PORT
 
 
 # === 4️⃣ Функции старта и остановки ===
@@ -81,8 +81,10 @@ async def handle_update(request):
 
 
 async def handle_root(request):
-    """Проверка работы бота (если заходишь в браузер)"""
+    logging.info("✅ Обработан GET-запрос на /")
+    print("✅ Обработан GET-запрос на /")  # Чтобы точно увидеть в логах
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
+
 
 
 # === 5️⃣ Основная логика бота ===
