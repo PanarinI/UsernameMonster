@@ -64,3 +64,7 @@ Invoke-WebRequest -Uri "https://namehuntbot-panarini.amvera.io/webhook"
     -ContentType "application/json"
 
 
+git add .
+git commit -m "..."
+git push origin main
+git push amvera main:master

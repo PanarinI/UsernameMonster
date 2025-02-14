@@ -112,20 +112,15 @@ if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
-    app = loop.run_until_complete(main())  # Запускаем main()
+    try:
+        app = loop.run_until_complete(main())  # Запускаем main()
 
-    if not IS_LOCAL:
-        # Только для режима Webhook (сервер)
-        logging.info("📌 Бот слушает маршруты:")
-        for route in app.router.routes():
-            try:
-                logging.info(f"➡️ {route.method} {route.resource.canonical}")
-            except AttributeError:
-                logging.info(f"⚠️ Не удалось получить путь маршрута: {route}")
+        if not IS_LOCAL:
+            web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
 
-        web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
+        # 🔥 Бесконечный цикл, чтобы контейнер не завершался
+        while True:
+            time.sleep(3600)
 
-
-    # 🔥 Добавляем бесконечный цикл, чтобы контейнер не завершался
-    while True:
-        time.sleep(3600)
+    except Exception as e:
+        logging.error(f"❌ Глобальная ошибка: {e}", exc_info=True)
