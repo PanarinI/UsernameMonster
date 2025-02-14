@@ -82,6 +82,9 @@ async def main():
         app.router.add_get("/", handle_root)  # Обработчик для проверки работы бота
         app.router.add_post("/webhook", handle_update)  # ✅ Фиксированный путь
         app.on_shutdown.append(on_shutdown)  # Добавляем обработчик остановки
+        logging.info("✅ Зарегистрированные маршруты в приложении:")
+        for route in app.router.routes():
+            logging.info(f"➡️ {route.method} {route.path}")
         return app
 
 # === 6️⃣ Запуск ===
