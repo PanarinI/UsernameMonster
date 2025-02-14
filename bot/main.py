@@ -22,7 +22,7 @@ IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"  # LOCAL_RUN=true �
 
 # === 2️⃣ Настройки Webhook ===
 WEBHOOK_HOST = os.getenv("WEBHOOK_URL", "https://namehuntbot-panarini.amvera.io")  # Домен Amvera
-WEBHOOK_PATH = f"/bot/{os.getenv('BOT_TOKEN')}"  # Путь вебхука
+WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"  # Полный URL вебхука
 
 # === 3️⃣ Настройки Web-сервера ===
@@ -42,12 +42,15 @@ async def on_startup():
     dp.include_router(generate_router)
     dp.include_router(common_router)
 
-    if IS_LOCAL:
+    if IS_LOCAL: # если запускаем локально
         await bot.delete_webhook()  # ❗ Отключаем Webhook перед Polling
         logging.info("🛑 Webhook отключён! Бот работает через Polling.")
-    else:
+    else: # если запускаем с облака
         try:
             await bot.delete_webhook()  # ❗ Удаляем старый Webhook перед установкой нового
+            logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
+            logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
+            logging.info(f"🔍 Итоговый Webhook URL: {WEBHOOK_URL}")
             await bot.set_webhook(WEBHOOK_URL)  # 🔗 Устанавливаем Webhook
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:
