@@ -132,7 +132,9 @@ if __name__ == "__main__":
         app = loop.run_until_complete(main())  # Запускаем бота
 
         if not IS_LOCAL:
-            web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
+            print(f"🚀 Попытка запустить сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
+            logging.info(f"🚀 Попытка запустить сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
+            APP_HOST, port=WEBAPP_PORT)
 
         # 🔥 Держим контейнер живым
         while True:
