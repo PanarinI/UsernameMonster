@@ -111,19 +111,6 @@ async def main():
         return app
 
 # === 6️⃣ Запуск ===
-
-
-import socket
-
-def check_port(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(("0.0.0.0", port)) == 0
-
-print(f"🔎 Проверка порта {WEBAPP_PORT}: {'Открыт' if check_port(WEBAPP_PORT) else '❌ Закрыт'}")
-logging.info(f"🔎 Проверка порта {WEBAPP_PORT}: {'Открыт' if check_port(WEBAPP_PORT) else '❌ Закрыт'}")
-
-
-
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
@@ -134,7 +121,7 @@ if __name__ == "__main__":
         if not IS_LOCAL:
             print(f"🚀 Попытка запустить сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
             logging.info(f"🚀 Попытка запустить сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
-            APP_HOST, port=WEBAPP_PORT)
+            web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
 
         # 🔥 Держим контейнер живым
         while True:
