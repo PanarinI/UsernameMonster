@@ -27,7 +27,7 @@ WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")  # 
 
 # === 3️⃣ Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"  # Запускаем сервер на всех интерфейсах
-WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 443))  # Берём порт из WEBHOOK_PORT
+WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 8443))  # Берём порт из WEBHOOK_PORT
 
 
 # === 4️⃣ Функции старта и остановки ===
@@ -51,6 +51,7 @@ async def on_startup():
             logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
             logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
             logging.info(f"🔍 Итоговый Webhook URL: {WEBHOOK_URL}")
+            print(f"🔍 Устанавливаем Webhook по адресу: {WEBHOOK_URL}")  # Отладочный вывод
             await bot.set_webhook(WEBHOOK_URL)  # 🔗 Устанавливаем Webhook
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:
