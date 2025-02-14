@@ -1,4 +1,5 @@
 import time
+import traceback
 import asyncio
 import sys
 import os
@@ -110,21 +111,34 @@ async def main():
         return app
 
 # === 6️⃣ Запуск ===
+
+
+import socket
+
+def check_port(port):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(("0.0.0.0", port)) == 0
+
+print(f"🔎 Проверка порта {WEBAPP_PORT}: {'Открыт' if check_port(WEBAPP_PORT) else '❌ Закрыт'}")
+logging.info(f"🔎 Проверка порта {WEBAPP_PORT}: {'Открыт' if check_port(WEBAPP_PORT) else '❌ Закрыт'}")
+
+
+
 if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
 
     try:
-        app = loop.run_until_complete(main())  # Запускаем main()
+        app = loop.run_until_complete(main())  # Запускаем бота
 
         if not IS_LOCAL:
-            print(f"🚀 Запускаем веб-сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
-            logging.info(f"🚀 Запускаем веб-сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
             web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
 
-        # 🔥 Бесконечный цикл, чтобы контейнер не завершался
+        # 🔥 Держим контейнер живым
         while True:
-            time.sleep(3600)
+            print("♻️ Контейнер работает, Amvera не убивай его!")
+            time.sleep(30)
 
     except Exception as e:
-        logging.error(f"❌ Глобальная ошибка: {e}", exc_info=True)
+        error_message = traceback.format_exc()
+        logging.error(f"❌ Глобальная ошибка: {e}\n{error_message}")
