@@ -119,3 +119,8 @@ if __name__ == "__main__":
 
         web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
 
+
+    # 🔥 Добавляем бесконечный цикл, чтобы контейнер не завершался
+    import time
+    while True:
+        time.sleep(3600)
