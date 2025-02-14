@@ -65,9 +65,11 @@ async def on_shutdown(_):
 
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
+    logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")  # Логируем весь запрос
     update = await request.json()  # Получаем JSON
     await dp.feed_update(bot=bot, update=update)  # Передаём в aiogram
     return web.Response()  # Отправляем OK
+
 
 async def handle_root(request):
     """Проверка работы бота (если заходишь в браузер)"""
