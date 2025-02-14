@@ -67,6 +67,7 @@ async def handle_root(request):
     """Проверка работы бота (если заходишь в браузер)"""
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
 
+
 # === 5️⃣ Основная логика бота ===
 async def main():
     """Главная функция запуска"""

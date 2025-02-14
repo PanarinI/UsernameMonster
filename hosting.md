@@ -35,4 +35,24 @@ curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
 
 
 curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
+
+
 7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
+
+
+curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/setWebhook?url=https://namehuntbot-panarini.amvera.io/webhook"
+
+
+curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
+
+
+Invoke-WebRequest -Uri "https://namehuntbot-panarini.amvera.io/webhook"
+
+curl "https://api.telegram.org/bot/7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
+
+
+
+curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/deleteWebhook"
+curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/setWebhook?url=https://namehuntbot-panarini.amvera.io/webhook"
+curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
+curl -I https://namehuntbot-panarini.amvera.io/webhook
