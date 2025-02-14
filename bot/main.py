@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')
 IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"  # LOCAL_RUN=true → Polling
 
 # === 2️⃣ Настройки Webhook ===
-WEBHOOK_HOST = os.getenv("WEBHOOK_URL", "https://namehuntbot-panarini.amvera.io")  # Домен Amvera
+WEBHOOK_HOST = os.getenv("WEBHOOK_URL", "https://namehuntbot-panarini.amvera.io").strip() # Домен Amvera
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")  # Принудительно HTTPS, полный URL вебхука
 
