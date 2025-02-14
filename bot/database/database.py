@@ -2,13 +2,8 @@ import asyncpg
 import os
 import logging
 import config
+from dotenv import load_dotenv
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logging.info("✅ Бот запущен!")
-
-
-#load_dotenv() -- чтобы загружать из локального окружения
 
 # Загружаем переменные окружения из Amvera
 DB_CONFIG = {
