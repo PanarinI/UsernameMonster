@@ -23,7 +23,8 @@ IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"  # LOCAL_RUN=true �
 # === 2️⃣ Настройки Webhook ===
 WEBHOOK_HOST = os.getenv("WEBHOOK_URL", "https://namehuntbot-panarini.amvera.io")  # Домен Amvera
 WEBHOOK_PATH = f"/bot/{os.getenv('BOT_TOKEN')}"  # Уникальный Webhook URL
-WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}"  # Полный Webhook URL
+WEBHOOK_URL = f"https://{os.getenv('WEBHOOK_URL', 'namehuntbot-panarini.amvera.io')}/webhook"
+
 
 # === 3️⃣ Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"  # Запускаем сервер на всех интерфейсах
@@ -61,6 +62,10 @@ async def handle_update(request):
     await dp.feed_update(bot=bot, update=update)  # Передаём в aiogram
     return web.Response()  # Отправляем OK
 
+async def handle_root(request):
+    return web.Response(text="✅ Бот работает!", content_type="text/plain")
+
+
 # === 5️⃣ Основная логика бота ===
 async def main():
     """Главная функция запуска"""
@@ -72,6 +77,7 @@ async def main():
     else:
         # 🌐 Webhook (серверный режим)
         app = web.Application()
+        app.router.add_get("/", handle_root)  # Обработчик для проверки работы бота
         app.router.add_post(WEBHOOK_PATH, handle_update)  # Webhook обработчик
         app.on_shutdown.append(on_shutdown)  # Добавляем обработчик остановки
         return app

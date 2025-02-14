@@ -25,4 +25,8 @@ amvera-panarini-cnpg-namehuntdb-rw
 
 
 namehuntbot-panarini.amvera.io -- домен для вебхука
+
+curl https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo -- проверка webhook
  
+
+https://namehuntbot-panarini.amvera.io/bot/7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
