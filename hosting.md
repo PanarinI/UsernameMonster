@@ -22,3 +22,7 @@ amvera-panarini-cnpg-namehuntdb-rw # для чтения/записи ХОСТ
 F:\PostgreSQL\bin\psql.exe -h amvera-panarini-cnpg-namehuntdb-rw -U PanarinI -d namehunt_db -W
 
 amvera-panarini-cnpg-namehuntdb-rw
+
+
+namehuntbot-panarini.amvera.io -- домен для вебхука
+ 
