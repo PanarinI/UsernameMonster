@@ -51,8 +51,11 @@ async def on_startup():
             await bot.delete_webhook()  # ❗ Удаляем старый Webhook перед установкой нового
             logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
             logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
-            logging.info(f"🔍 Итоговый Webhook URL: {WEBHOOK_URL}")
             print(f"🔍 Устанавливаем Webhook по адресу: {WEBHOOK_URL}")  # Отладочный вывод
+            logging.info(f"📌 Webhook URL перед установкой: {WEBHOOK_URL}")
+            if not WEBHOOK_URL.startswith("https://"):
+                logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
+
             await bot.set_webhook(WEBHOOK_URL)  # 🔗 Устанавливаем Webhook
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:

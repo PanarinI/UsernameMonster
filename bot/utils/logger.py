@@ -9,6 +9,9 @@ def setup_logging():
     if not os.getenv("AMVERA_ENV") and LOG_FILE:
         handlers.append(logging.FileHandler(LOG_FILE, mode="w"))
 
+    print("AMVERA_ENV:", os.getenv("AMVERA_ENV"))
+    print("LOG_FILE:", LOG_FILE)
+
     logging.basicConfig(
         level=LOG_LEVEL,
         format=LOG_FORMAT,
