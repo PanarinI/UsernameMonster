@@ -60,6 +60,7 @@ async def on_startup():
 
 async def on_shutdown(_):
     """Остановка бота"""
+    await bot.session.close()  # Закрываем HTTP-сессию, чтобы не было утечек памяти
     logging.info("🚨 Бот остановлен")
 
 async def handle_update(request):
