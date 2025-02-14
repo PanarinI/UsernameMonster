@@ -107,4 +107,6 @@ if __name__ == "__main__":
 
     if not IS_LOCAL:
         # Только для режима Webhook (сервер)
+        for route in app.router.routes():
+            logging.info(f"📌 Бот слушает маршрут: {route.method} {route.path}")
         web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)

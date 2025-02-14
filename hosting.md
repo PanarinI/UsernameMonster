@@ -57,5 +57,10 @@ curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
 curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
 curl -I https://namehuntbot-panarini.amvera.io/webhook
 
+Invoke-WebRequest -Uri "https://namehuntbot-panarini.amvera.io/webhook" 
+
+    -Method Post `
+    -Body '{"update_id":123456, "message": {"text": "/start", "chat": {"id": 12345678}}}' `
+    -ContentType "application/json"
 
 
