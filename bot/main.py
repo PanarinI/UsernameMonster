@@ -79,37 +79,26 @@ async def on_shutdown(_):
         logging.error(f"❌ Ошибка при закрытии сессии: {e}")
     logging.info("✅ Сессия закрыта.")
 
-
-
-
-
+# === 📩 Обработчик Webhook ===
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
     logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
+    time_start = time.time()
 
     try:
-        # ✅ Парсим JSON как объект Update
         update_data = await request.json()
         update = Update(**update_data)
-
-        # ✅ Передаём в aiogram
         await dp.feed_update(bot=bot, update=update)
+        time_end = time.time()
+        logging.info(f"⏳ Обработка запроса заняла {time_end - time_start:.4f} секунд")
         return web.Response()
-
     except Exception as e:
         logging.error(f"❌ Ошибка обработки Webhook: {e}")
         return web.Response(status=500)
 
-
 async def handle_root(request):
     logging.info("✅ Обработан GET-запрос на /")
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
-
-# === 📥 Middleware для логирования всех входящих запросов ===
-@web.middleware
-async def log_requests_middleware(request, handler):
-    logging.info(f"📥 Входящий запрос: {request.method} {request.path}")
-    return await handler(request)
 
 # === 🚀 Основная логика ===
 async def main():
@@ -119,25 +108,18 @@ async def main():
     if IS_LOCAL:
         await dp.start_polling(bot)
     else:
-        app = web.Application(middlewares=[log_requests_middleware])
+        app = web.Application()
         app.add_routes([
             web.get("/", handle_root),
             web.post("/webhook", handle_update)
         ])
         app.on_shutdown.append(on_shutdown)
-
-        # ✅ Логируем маршруты перед запуском
-        logging.info("✅ Зарегистрированные маршруты в приложении:")
-        for route in app.router.routes():
-            logging.info(f"➡️ {route.method} {route.resource.canonical}")
-
         return app
 
 # === 🔥 Функция старта сервера ===
 async def start_server():
     try:
         app = await main()
-
         if IS_LOCAL:
             return  # Локальный запуск → Polling
 
@@ -152,41 +134,18 @@ async def start_server():
         # 🔎 Проверяем, что порт 80 реально открыт
         if is_port_in_use(WEBAPP_PORT):
             logging.info(f"🟢 Порт {WEBAPP_PORT} успешно открыт и слушает входящие запросы.")
-            print(f"🟢 Порт {WEBAPP_PORT} успешно открыт и слушает входящие запросы.")
         else:
             logging.error(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
-            print(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
 
-        # 🔥 Держим контейнер живым (вечный цикл)
+        # 🔥 Держим контейнер живым
         while True:
             logging.info("♻️ Контейнер активен. Проверка раз в 30 секунд.")
-            print("♻️ Контейнер работает, Amvera не убивай его!")
             await asyncio.sleep(30)
-
     except Exception as e:
         logging.error(f"❌ Ошибка запуска сервера: {e}")
         sys.exit(1)
 
-# === 🛑 Глобальный обработчик ошибок ===
-async def handle_exception(loop, context):
-    logging.error(f"❌ Глобальная ошибка в asyncio: {context['message']}")
-    sys.exit(1)
-
 # === 🚀 Запуск сервера ===
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
-loop.set_exception_handler(handle_exception)
-
 loop.run_until_complete(start_server())
-
-# === 🔎 Проверка соединения после запуска ===
-def test_connection():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        result = s.connect_ex(("0.0.0.0", 80))
-        if result == 0:
-            logging.info("✅ Соединение с портом 80 успешно установлено!")
-        else:
-            logging.error("❌ Соединение с портом 80 НЕ установлено! Возможно, что-то блокирует доступ.")
-            print("❌ Соединение с портом 80 НЕ установлено!")
-
-test_connection()
