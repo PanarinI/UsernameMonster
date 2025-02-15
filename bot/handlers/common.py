@@ -7,7 +7,7 @@ common_router = Router()
 @common_router.callback_query(F.data == "back_to_main")
 async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     """
-    Обработчик для кнопки "Назад в главное меню".
+    Обработчик для кнопки "Назад в меню".
     Сбрасывает текущее состояние и отправляет главное меню.
     """
     await query.answer()  # Отвечаем на callback_query

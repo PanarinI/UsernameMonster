@@ -101,7 +101,7 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
 @check_router.callback_query(F.data == "back_to_main")
 async def back_to_main(query: types.CallbackQuery, state: FSMContext):
     """
-    Обработчик для кнопки "Назад в главное меню".
+    Обработчик для кнопки "Назад в меню".
     """
     await state.clear()  # ⛔ Очистка состояния перед выходом
     await asyncio.sleep(0.05)

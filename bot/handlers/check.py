@@ -127,7 +127,12 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     elif result == "Продано":
         await message.answer(f"💰 Имя @{username} уже продано и больше недоступно.", reply_markup=check_result_kb())
     elif result == "Доступно для покупки":
-        await message.answer(f"Имя @{username} занято, но доступно для покупки на Fragment", reply_markup=check_result_kb())
+        fragment_url = f"https://fragment.com/username/{username}"
+        await message.answer(
+            f"Имя @{username} занято, но доступно для покупки [на Fragment]({fragment_url}).",
+            reply_markup=check_result_kb(),
+            parse_mode="Markdown"  # Используем HTML для ссылки
+        )
     elif result == "Свободно, но не на продаже":
         await message.answer(f"✅ Имя @{username} свободно!", reply_markup=check_result_kb())
     elif result == "Недоступно":
@@ -142,7 +147,7 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
 @check_router.callback_query(F.data == "back_to_main")
 async def back_to_main(query: types.CallbackQuery, state: FSMContext):
     """
-    Обработчик для кнопки "Назад в главное меню".
+    Обработчик для кнопки "Назад в меню".
     """
     logging.info(f"🔙 {query.from_user.username} вернулся в главное меню.")
 
