@@ -13,9 +13,9 @@ from handlers.check import check_router
 from handlers.common import common_router
 from handlers.help import help_router
 from database.database import init_db
-from utils.logger import setup_logging  # Логирование
+from utils.logger import setup_logging
 
-setup_logging()  # Запуск логирования
+setup_logging()
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -32,11 +32,6 @@ WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 80))
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("0.0.0.0", port)) == 0
-
-
-if is_port_in_use(WEBAPP_PORT):
-    logging.error(f"❌ Порт {WEBAPP_PORT} уже используется другим процессом!")
-    sys.exit(1)
 
 
 async def on_startup():
@@ -92,21 +87,13 @@ async def handle_root(request):
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
 
 
-async def log_all_requests(app, handler):
-    async def middleware_handler(request):
-        logging.info(f"📥 Входящий запрос: {request.method} {request.path}")
-        return await handler(request)
-
-    return middleware_handler
-
-
 async def main():
     await on_startup()
 
     if IS_LOCAL:
         await dp.start_polling(bot)
     else:
-        app = web.Application(middlewares=[log_all_requests])
+        app = web.Application()
         app.add_routes([
             web.get("/", handle_root),
             web.post("/webhook", handle_update)
@@ -136,8 +123,10 @@ async def start_server():
             logging.error(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
             print(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
 
-        # 💡 Фикс: Держим контейнер живым
+        # 💡 Фикс: Вечный цикл с логами активности
         while True:
+            print("♻️ Контейнер работает, Amvera не убивай его!")
+            logging.info("♻️ Контейнер активен. Проверка раз в 30 секунд.")
             await asyncio.sleep(30)
 
     except Exception as e:
