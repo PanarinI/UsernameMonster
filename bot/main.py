@@ -31,7 +31,7 @@ WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")  # 
 
 # === 3️⃣ Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"  # Запускаем сервер на всех интерфейсах
-WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 8080))  # Берём порт из WEBHOOK_PORT
+WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 80))  # Берём порт из WEBHOOK_PORT
 
 
 # === 4️⃣ Функции старта и остановки ===
@@ -86,7 +86,19 @@ async def handle_update(request):
 async def handle_root(request):
     logging.info("✅ Обработан GET-запрос на /")
     print("✅ Обработан GET-запрос на /")  # Чтобы точно увидеть в логах
+    curl - v
+    http: // namehuntbot - panarini.amvera.io /
+
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
+
+async def log_all_requests(app, handler):
+    async def middleware_handler(request):
+        logging.info(f"📥 Входящий запрос: {request.method} {request.path}")
+        print(f"📥 Входящий запрос: {request.method} {request.path}")
+        return await handler(request)
+    return middleware_handler
+
+app = web.Application(middlewares=[log_all_requests])
 
 
 
@@ -101,7 +113,10 @@ async def main():
     else:
         # 🌐 Webhook (серверный режим)
         app = web.Application()
-        app.router.add_get("/", handle_root)  # Обработчик для проверки работы бота
+        app.add_routes([
+            web.get("/", handle_root),
+            web.head("/", handle_root),  # Добавляем HEAD-запросы
+        ])
         app.router.add_post("/webhook", handle_update)  # ✅ Фиксированный путь
         app.on_shutdown.append(on_shutdown)  # Добавляем обработчик остановки
         logging.info("✅ Зарегистрированные маршруты в приложении:")
@@ -134,7 +149,7 @@ if __name__ == "__main__":
         if not IS_LOCAL:
             print(f"🚀 Попытка запустить сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
             logging.info(f"🚀 Попытка запустить сервер на {WEBAPP_HOST}:{WEBAPP_PORT}")
-            web.run_app(app, host=WEBAPP_HOST, port=WEBAPP_PORT)
+            web.run_app(app, host="0.0.0.0", port=80, access_log=logging)
 
         # 🔥 Держим контейнер живым
         while True:
