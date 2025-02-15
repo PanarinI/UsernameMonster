@@ -7,6 +7,7 @@ import os
 import logging
 from aiohttp import web
 from setup import bot, dp
+from aiogram.types import Update
 from handlers.start import start_router
 from handlers.generate import generate_router
 from handlers.check import check_router
@@ -78,12 +79,27 @@ async def on_shutdown(_):
         logging.error(f"❌ Ошибка при закрытии сессии: {e}")
     logging.info("✅ Сессия закрыта.")
 
-# === 📩 Обработчики запросов ===
+
+
+
+
 async def handle_update(request):
+    """Обработчик Webhook (принимает входящие запросы от Telegram)"""
     logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
-    update = await request.json()
-    await dp.feed_update(bot=bot, update=update)
-    return web.Response()
+
+    try:
+        # ✅ Парсим JSON как объект Update
+        update_data = await request.json()
+        update = Update(**update_data)
+
+        # ✅ Передаём в aiogram
+        await dp.feed_update(bot=bot, update=update)
+        return web.Response()
+
+    except Exception as e:
+        logging.error(f"❌ Ошибка обработки Webhook: {e}")
+        return web.Response(status=500)
+
 
 async def handle_root(request):
     logging.info("✅ Обработан GET-запрос на /")
