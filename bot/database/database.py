@@ -26,6 +26,7 @@ logging.info(f"    DB NAME = {DB_CONFIG['database']}")
 logging.info(f"    USER = {DB_CONFIG['user']}")
 logging.info(f"    PASSWORD = {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
 
+
 # Определяем пути к SQL-файлам
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREATE_TABLE_SQL_PATH = os.path.join(BASE_DIR, "create_table.sql")

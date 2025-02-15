@@ -20,7 +20,10 @@ namehunt_db # название БД
 amvera-panarini-cnpg-namehuntdb-rw # для чтения/записи в БД домен
 
 namehuntbot-panarini.amvera.io -- домен для вебхука
+amvera-panarini-cnpg-namehuntdb-rw.amvera.io
 
+
+namehunt_db-panarini.db-msk0.amvera.tech -- pgAdmin
 
 curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
 
