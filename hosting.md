@@ -17,30 +17,9 @@ git push amvera main:master
 
 namehunt_db # название БД
 
-amvera-panarini-cnpg-namehuntdb-rw # для чтения/записи ХОСТ
-
-F:\PostgreSQL\bin\psql.exe -h amvera-panarini-cnpg-namehuntdb-rw -U PanarinI -d namehunt_db -W
-
-amvera-panarini-cnpg-namehuntdb-rw
-
+amvera-panarini-cnpg-namehuntdb-rw # для чтения/записи в БД домен
 
 namehuntbot-panarini.amvera.io -- домен для вебхука
-
-curl https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo -- проверка webhook
- 
-
-https://namehuntbot-panarini.amvera.io/bot/7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
-
-curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/setWebhook?url=https://namehuntbot-panarini.amvera.io/bot/7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank"
-
-
-curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
-
-
-7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
-
-
-curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/setWebhook?url=https://namehuntbot-panarini.amvera.io/webhook"
 
 
 curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
@@ -49,19 +28,6 @@ curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
 Invoke-WebRequest -Uri "https://namehuntbot-panarini.amvera.io/webhook"
 
 
-
-
-
-curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/deleteWebhook"
-curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/setWebhook?url=https://namehuntbot-panarini.amvera.io/webhook"
-curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
-curl -I https://namehuntbot-panarini.amvera.io/webhook
-
-Invoke-WebRequest -Uri "https://namehuntbot-panarini.amvera.io/webhook" 
-
-    -Method Post `
-    -Body '{"update_id":123456, "message": {"text": "/start", "chat": {"id": 12345678}}}' `
-    -ContentType "application/json"
 
 
 git add .

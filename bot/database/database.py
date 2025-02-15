@@ -4,6 +4,12 @@ import logging
 import config
 from dotenv import load_dotenv
 
+# Загружаем переменные окружения из .env (ТОЛЬКО для локального режима)
+IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"
+
+if IS_LOCAL:
+    load_dotenv()  # Загружаем .env ТОЛЬКО при локальном запуске
+
 
 # Загружаем переменные окружения из Amvera
 DB_CONFIG = {
@@ -14,7 +20,7 @@ DB_CONFIG = {
     "port": os.getenv("PORT", "5432"),  # По умолчанию 5432
 }
 
-logging.info(f"🔍 DATABASE CONFIG:")
+logging.info(f"🔍 Используется база данных: {'ЛОКАЛЬНАЯ' if IS_LOCAL else 'АМВЕРА'}")
 logging.info(f"    HOST = {DB_CONFIG['host']}")
 logging.info(f"    DB NAME = {DB_CONFIG['database']}")
 logging.info(f"    USER = {DB_CONFIG['user']}")
@@ -50,12 +56,6 @@ async def init_db_pool():
     except Exception as e:
         logging.error(f"❌ Ошибка при создании пула соединений: {e}")
 
-async def close_db_pool():
-    """Закрывает пул соединений при завершении работы."""
-    global pool
-    if pool:
-        await pool.close()
-        logging.info("✅ Пул соединений закрыт.")
 
 async def get_connection():
     """Получает соединение из пула."""
@@ -63,6 +63,13 @@ async def get_connection():
     if not pool:  # Если пул не создан, создаём его
         await init_db_pool()
     return await pool.acquire()  # Берём соединение из пула
+
+async def close_db_pool():
+    """Закрывает пул соединений при завершении работы."""
+    global pool
+    if pool:
+        await pool.close()
+        logging.info("✅ Пул соединений закрыт.")
 
 async def init_db():
     """Создаёт таблицу, если её нет."""
