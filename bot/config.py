@@ -25,7 +25,7 @@ GENERATED_USERNAME_COUNT = 6
 GEN_ATTEMPTS = 5
 
 # Максимальное время ожидания генерации (в секундах) (одной или всех?)
-GEN_TIMEOUT = 20
+GEN_TIMEOUT = 25
 
 # Прерывание после нескольких пустых ответов
 MAX_EMPTY_RESPONSES = 3
