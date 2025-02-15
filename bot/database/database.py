@@ -1,7 +1,6 @@
 import asyncpg
 import os
 import logging
-import sys
 import config
 from dotenv import load_dotenv
 
@@ -36,9 +35,13 @@ logging.info(f"    DB NAME = {DB_CONFIG['database']}")
 logging.info(f"    USER = {DB_CONFIG['user']}")
 logging.info(f"    PASSWORD = {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
 
+if not logging.getLogger().handlers:
+    print("🔥🔥🔥 DEBUG: ЛОГГЕР НЕ НАСТРОЕН! 🔥🔥🔥")
+else:
+    print("✅ Логгер настроен, обработчики есть.")
 
-sys.stderr.write("🔥🔥🔥 DEBUG: ЭТО ДОЛЖНО ПОКАЗАТЬСЯ В ЛОГЕ! 🔥🔥🔥\n")
-sys.stderr.flush()
+logging.error("🔥🔥🔥 DEBUG: ЭТО ДОЛЖНО ПОКАЗАТЬСЯ В ЛОГЕ! 🔥🔥🔥\n")
+
 
 print("DEBUG: Подключение к базе данных")
 print(f"HOST: {DB_CONFIG['host']}")
