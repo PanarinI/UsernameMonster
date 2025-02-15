@@ -4,24 +4,28 @@ import logging
 import config
 from dotenv import load_dotenv
 
+# Настройка логирования
+logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
+
 # Загружаем переменные окружения из .env (ТОЛЬКО для локального режима)
 IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
-if IS_LOCAL:
-    load_dotenv()  # Загружаем .env ТОЛЬКО при локальном запуске
+# Принудительно загружаем переменные (вдруг Амвера игнорит?)
+load_dotenv()
 
+logging.debug("🔍 DEBUG: Проверяем переменные окружения...")
 print("DEBUG: Проверяем переменные окружения")
-print(f"ENV HOST: {os.getenv('HOST')}")
-print(f"ENV DATABASE: {os.getenv('DTBS')}")
-print(f"ENV USER: {os.getenv('USER')}")
+print(f"ENV HOST: {os.getenv('HOST') or '❌ НЕ НАЙДЕН'}")
+print(f"ENV DATABASE: {os.getenv('DTBS') or '❌ НЕ НАЙДЕН'}")
+print(f"ENV USER: {os.getenv('USER') or '❌ НЕ НАЙДЕН'}")
 print(f"ENV PASSWORD: {'✅' if os.getenv('PSWRD') else '❌ НЕ НАЙДЕНА'}")
 
 # Загружаем переменные окружения из Amvera
 DB_CONFIG = {
-    "database": os.getenv("DTBS"),
-    "user": os.getenv("USER"),
-    "password": os.getenv("PSWRD"),
-    "host": os.getenv("HOST"),
+    "database": os.getenv("DTBS") or "❌ НЕ НАЙДЕНА",
+    "user": os.getenv("USER") or "❌ НЕ НАЙДЕН",
+    "password": os.getenv("PSWRD") or "❌ НЕ НАЙДЕНА",
+    "host": os.getenv("HOST") or "❌ НЕ НАЙДЕН",
     "port": os.getenv("PORT", "5432"),  # По умолчанию 5432
 }
 
@@ -30,19 +34,18 @@ logging.info(f"    HOST = {DB_CONFIG['host']}")
 logging.info(f"    DB NAME = {DB_CONFIG['database']}")
 logging.info(f"    USER = {DB_CONFIG['user']}")
 logging.info(f"    PASSWORD = {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
+
 print("DEBUG: Подключение к базе данных")
 print(f"HOST: {DB_CONFIG['host']}")
 print(f"DB NAME: {DB_CONFIG['database']}")
 print(f"USER: {DB_CONFIG['user']}")
 print(f"PASSWORD: {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
 
-
-# Определяем пути к SQL-файлам
+# Проверяем наличие SQL-файлов перед загрузкой
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CREATE_TABLE_SQL_PATH = os.path.join(BASE_DIR, "create_table.sql")
 INSERT_SQL_PATH = os.path.join(BASE_DIR, "insert_username.sql")
 
-# Проверяем наличие SQL-файлов перед загрузкой
 if not os.path.exists(CREATE_TABLE_SQL_PATH):
     logging.error(f"❌ Файл {CREATE_TABLE_SQL_PATH} не найден!")
 
@@ -67,7 +70,6 @@ async def init_db_pool():
     except Exception as e:
         logging.error(f"❌ Ошибка при создании пула соединений: {e}")
 
-
 async def get_connection():
     """Получает соединение из пула."""
     global pool
@@ -84,6 +86,7 @@ async def close_db_pool():
 
 async def init_db():
     """Создаёт таблицу, если её нет."""
+    await init_db_pool()  # Инициализируем пул, если он не создан
     conn = await get_connection()
     try:
         if os.path.exists(CREATE_TABLE_SQL_PATH):
