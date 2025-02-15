@@ -113,7 +113,7 @@ async def main():
         # ✅ Логируем маршруты перед запуском
         logging.info("✅ Зарегистрированные маршруты в приложении:")
         for route in app.router.routes():
-            logging.info(f"➡️ {route.method} {route.path}")
+            logging.info(f"➡️ {route.method} {route.resource.canonical}")
 
         return app
 
