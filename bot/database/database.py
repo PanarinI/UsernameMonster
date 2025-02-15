@@ -25,6 +25,11 @@ logging.info(f"    HOST = {DB_CONFIG['host']}")
 logging.info(f"    DB NAME = {DB_CONFIG['database']}")
 logging.info(f"    USER = {DB_CONFIG['user']}")
 logging.info(f"    PASSWORD = {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
+print("DEBUG: Подключение к базе данных")
+print(f"HOST: {DB_CONFIG['host']}")
+print(f"DB NAME: {DB_CONFIG['database']}")
+print(f"USER: {DB_CONFIG['user']}")
+print(f"PASSWORD: {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
 
 
 # Определяем пути к SQL-файлам
