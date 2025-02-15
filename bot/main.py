@@ -89,6 +89,12 @@ async def handle_root(request):
     logging.info("✅ Обработан GET-запрос на /")
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
 
+# === 📥 Middleware для логирования всех входящих запросов ===
+@web.middleware
+async def log_requests_middleware(request, handler):
+    logging.info(f"📥 Входящий запрос: {request.method} {request.path}")
+    return await handler(request)
+
 # === 🚀 Основная логика ===
 async def main():
     """Главная функция запуска"""
@@ -97,13 +103,14 @@ async def main():
     if IS_LOCAL:
         await dp.start_polling(bot)
     else:
-        app = web.Application()
+        app = web.Application(middlewares=[log_requests_middleware])
         app.add_routes([
             web.get("/", handle_root),
             web.post("/webhook", handle_update)
         ])
         app.on_shutdown.append(on_shutdown)
 
+        # ✅ Логируем маршруты перед запуском
         logging.info("✅ Зарегистрированные маршруты в приложении:")
         for route in app.router.routes():
             logging.info(f"➡️ {route.method} {route.path}")
