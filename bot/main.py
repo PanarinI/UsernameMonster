@@ -15,29 +15,35 @@ from handlers.help import help_router
 from database.database import init_db
 from utils.logger import setup_logging
 
+# ✅ Настраиваем логирование
 setup_logging()
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+# === 🔍 Определяем режим работы ===
 IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
+# === 🌍 Настройки Webhook ===
 WEBHOOK_HOST = os.getenv("WEBHOOK_URL", "https://namehuntbot-panarini.amvera.io").strip()
 WEBHOOK_PATH = "/webhook"
 WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")
 
+# === 🌐 Настройки Web-сервера ===
 WEBAPP_HOST = "0.0.0.0"
 WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 80))
 
-
+# === 🔎 Функция проверки доступности порта ===
 def is_port_in_use(port):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(("0.0.0.0", port)) == 0
 
-
+# === 🚀 Функция запуска бота ===
 async def on_startup():
-    print(f"🔗 Устанавливаем вебхук: {WEBHOOK_URL}")
+    """Запуск бота"""
+    logging.info(f"🔗 Устанавливаем вебхук: {WEBHOOK_URL}")
     await init_db()
 
+    # Подключаем обработчики команд
     dp.include_router(start_router)
     dp.include_router(help_router)
     dp.include_router(check_router)
@@ -52,7 +58,6 @@ async def on_startup():
             await bot.delete_webhook()
             logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
             logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
-            print(f"🔍 Устанавливаем Webhook по адресу: {WEBHOOK_URL}")
             logging.info(f"📌 Webhook URL перед установкой: {WEBHOOK_URL}")
 
             if not WEBHOOK_URL.startswith("https://"):
@@ -62,10 +67,9 @@ async def on_startup():
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:
             logging.error(f"❌ Ошибка при установке Webhook: {e}")
-            print(f"❌ Ошибка при установке Webhook: {e}")
-            sys.exit(1)
+            sys.exit(1)  # Прерываем запуск
 
-
+# === 🛑 Функция остановки бота ===
 async def on_shutdown(_):
     logging.info("🚨 Бот остановлен! Закрываю сессию...")
     try:
@@ -74,20 +78,20 @@ async def on_shutdown(_):
         logging.error(f"❌ Ошибка при закрытии сессии: {e}")
     logging.info("✅ Сессия закрыта.")
 
-
+# === 📩 Обработчики запросов ===
 async def handle_update(request):
     logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
     update = await request.json()
     await dp.feed_update(bot=bot, update=update)
     return web.Response()
 
-
 async def handle_root(request):
     logging.info("✅ Обработан GET-запрос на /")
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
 
-
+# === 🚀 Основная логика ===
 async def main():
+    """Главная функция запуска"""
     await on_startup()
 
     if IS_LOCAL:
@@ -99,23 +103,30 @@ async def main():
             web.post("/webhook", handle_update)
         ])
         app.on_shutdown.append(on_shutdown)
+
+        logging.info("✅ Зарегистрированные маршруты в приложении:")
+        for route in app.router.routes():
+            logging.info(f"➡️ {route.method} {route.path}")
+
         return app
 
-
+# === 🔥 Функция старта сервера ===
 async def start_server():
     try:
         app = await main()
 
         if IS_LOCAL:
-            return
+            return  # Локальный запуск → Polling
 
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, "0.0.0.0", WEBAPP_PORT)
         await site.start()
+
         logging.info("✅ Сервер запущен через AppRunner")
         print("✅ Сервер запущен через AppRunner")
 
+        # 🔎 Проверяем, что порт 80 реально открыт
         if is_port_in_use(WEBAPP_PORT):
             logging.info(f"🟢 Порт {WEBAPP_PORT} успешно открыт и слушает входящие запросы.")
             print(f"🟢 Порт {WEBAPP_PORT} успешно открыт и слушает входящие запросы.")
@@ -123,26 +134,36 @@ async def start_server():
             logging.error(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
             print(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
 
-        # 💡 Фикс: Вечный цикл с логами активности
+        # 🔥 Держим контейнер живым (вечный цикл)
         while True:
-            print("♻️ Контейнер работает, Amvera не убивай его!")
             logging.info("♻️ Контейнер активен. Проверка раз в 30 секунд.")
+            print("♻️ Контейнер работает, Amvera не убивай его!")
             await asyncio.sleep(30)
 
     except Exception as e:
         logging.error(f"❌ Ошибка запуска сервера: {e}")
-        print(f"❌ Ошибка запуска сервера: {e}")
         sys.exit(1)
 
-
+# === 🛑 Глобальный обработчик ошибок ===
 async def handle_exception(loop, context):
     logging.error(f"❌ Глобальная ошибка в asyncio: {context['message']}")
-    print(f"❌ Глобальная ошибка в asyncio: {context['message']}")
     sys.exit(1)
 
-
+# === 🚀 Запуск сервера ===
 loop = asyncio.new_event_loop()
 asyncio.set_event_loop(loop)
 loop.set_exception_handler(handle_exception)
 
 loop.run_until_complete(start_server())
+
+# === 🔎 Проверка соединения после запуска ===
+def test_connection():
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        result = s.connect_ex(("0.0.0.0", 80))
+        if result == 0:
+            logging.info("✅ Соединение с портом 80 успешно установлено!")
+        else:
+            logging.error("❌ Соединение с портом 80 НЕ установлено! Возможно, что-то блокирует доступ.")
+            print("❌ Соединение с портом 80 НЕ установлено!")
+
+test_connection()
