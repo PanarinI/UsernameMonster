@@ -13,13 +13,6 @@ IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"
 # Принудительно загружаем переменные (вдруг Амвера игнорит?)
 load_dotenv()
 
-logging.debug("🔍 DEBUG: Проверяем переменные окружения...")
-print("DEBUG: Проверяем переменные окружения")
-print(f"ENV HOST: {os.getenv('HOST') or '❌ НЕ НАЙДЕН'}")
-print(f"ENV DATABASE: {os.getenv('DTBS') or '❌ НЕ НАЙДЕН'}")
-print(f"ENV USER: {os.getenv('USER') or '❌ НЕ НАЙДЕН'}")
-print(f"ENV PASSWORD: {'✅' if os.getenv('PSWRD') else '❌ НЕ НАЙДЕНА'}")
-
 # Загружаем переменные окружения из Amvera
 DB_CONFIG = {
     "database": os.getenv("DTBS") or "❌ НЕ НАЙДЕНА",
@@ -35,19 +28,6 @@ logging.info(f"    DB NAME = {DB_CONFIG['database']}")
 logging.info(f"    USER = {DB_CONFIG['user']}")
 logging.info(f"    PASSWORD = {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
 
-if not logging.getLogger().handlers:
-    print("🔥🔥🔥 DEBUG: ЛОГГЕР НЕ НАСТРОЕН! 🔥🔥🔥")
-else:
-    print("✅ Логгер настроен, обработчики есть.")
-
-logging.error("🔥🔥🔥 DEBUG: ЭТО ДОЛЖНО ПОКАЗАТЬСЯ В ЛОГЕ! 🔥🔥🔥\n")
-
-
-print("DEBUG: Подключение к базе данных")
-print(f"HOST: {DB_CONFIG['host']}")
-print(f"DB NAME: {DB_CONFIG['database']}")
-print(f"USER: {DB_CONFIG['user']}")
-print(f"PASSWORD: {'✅' if DB_CONFIG['password'] else '❌ НЕ НАЙДЕНА'}")
 
 # Проверяем наличие SQL-файлов перед загрузкой
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
