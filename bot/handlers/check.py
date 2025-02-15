@@ -1,4 +1,7 @@
 import asyncio
+import logging
+import re
+import time
 from aiogram import Router, types, F, Bot
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -6,7 +9,7 @@ from .states import CheckUsernameStates
 from keyboards.check import check_result_kb
 from keyboards.main_menu import main_menu_kb, back_to_main_kb
 from services.check import check_username_availability
-import re
+
 
 check_router = Router()  # Создаём Router
 
@@ -17,6 +20,8 @@ async def cmd_check_slash(message: types.Message, state: FSMContext):
     """
     Обработчик для команды /check.
     """
+    logging.info(f"📩 Команда /check от {message.from_user.username} (id={message.from_user.id})")
+
     await state.clear()  # ⛔ Принудительно очищаем ВСЕ состояния
     await asyncio.sleep(0.05)  # 🔄 Даем FSM время сброситься
 
@@ -31,6 +36,8 @@ async def cmd_check(query: types.CallbackQuery, state: FSMContext):
     """
     Обработчик для кнопки "Проверить username".
     """
+    logging.info(f"📩 Нажата кнопка 'Проверить username' от {query.from_user.username} (id={query.from_user.id})")
+
     await state.clear()  # ⛔ Очищаем состояние перед новой командой
     await asyncio.sleep(0.05)  # 🔄 Даем FSM время очиститься
 
@@ -59,6 +66,9 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     """
 
     username = message.text.strip()
+    check_start = time.time()  # ✅ Фиксируем время начала проверки
+
+    logging.info(f"🔍 Начало проверки username: @{username} (от {message.from_user.username}, id={message.from_user.id})")
 
     # ❗️ Если пользователь вводит КОМАНДУ в этом состоянии – сбрасываем FSM и игнорируем ввод
     if username.startswith("/"):
@@ -77,11 +87,15 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
         )
         return
 
+
     # Если username корректен, проверяем username
+    logging.info(f"🔄 Проверяем @{username} через Telegram API и Fragment...") # Логируем процесс проверки
     result = await check_username_availability(bot, username)
+    logging.info(f"✅ Проверка завершена за {time.time() - check_start:.2f} сек. Результат: {result}")
 
     # ✅ Защита от None
     if result is None:
+        logging.error(f"⚠️ Ошибка: Не удалось проверить username @{username}.")
         await message.answer("⚠️ Ошибка: не удалось проверить username. Попробуйте позже.")
         return
 
@@ -90,6 +104,8 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
         retry_seconds = int(result.split(":")[1])
         hours = retry_seconds // 3600
         minutes = (retry_seconds % 3600) // 60
+
+        logging.warning(f"🚫 Telegram API заблокировал бота на {hours}ч {minutes}м")
 
         await message.answer(
             f"🚫 Бот временно заблокирован в Telegram API из-за слишком частых проверок.\n"
@@ -101,6 +117,8 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
         return
 
     # 🟢 Логика ответов
+    logging.info(f"✅ Результат проверки @{username}: {result}")
+
     if result == "Свободно":
         await message.answer(f"✅ Имя @{username} свободно!", reply_markup=check_result_kb())
     elif result == "Занято":
@@ -125,6 +143,8 @@ async def back_to_main(query: types.CallbackQuery, state: FSMContext):
     """
     Обработчик для кнопки "Назад в главное меню".
     """
+    logging.info(f"🔙 {query.from_user.username} вернулся в главное меню.")
+
     await state.clear()  # ⛔ Очистка состояния перед выходом
     await asyncio.sleep(0.05)
 

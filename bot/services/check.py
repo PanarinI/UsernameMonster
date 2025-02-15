@@ -4,6 +4,8 @@ import ssl
 from aiogram import Bot
 from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramRetryAfter
 from bs4 import BeautifulSoup
+from config import REQUEST_INTERVAL
+
 
 
 async def check_username_availability(bot: Bot, username: str) -> str:
@@ -16,7 +18,7 @@ async def check_username_availability(bot: Bot, username: str) -> str:
         print(f"[RESULT] ❌ Имя @{username} занято (найдено через API).")
         return "Занято"
 
-    except TelegramForbiddenError: # если TelegramForbiddenError: bot was kicked from the channel chat
+    except TelegramForbiddenError:
         print(f"[RESULT] ❌ Имя @{username} занято (бот был кикнут из чата).")
         return "Занято"
 
@@ -32,10 +34,16 @@ async def check_username_availability(bot: Bot, username: str) -> str:
         return "Невозможно определить"
 
     except TelegramRetryAfter as e:
-        print(f"⏳ Flood Control! Блокировка на {e.retry_after} секунд.")
-        return f"FLOOD_CONTROL:{e.retry_after}"  # Возвращаем время ожидания
+        # Когда Telegram возвращает сообщение с блокировкой (flood control)
+        retry_after = e.retry_after
+        print(f"⏳ Flood Control! Блокировка на {retry_after} секунд.")
+        await asyncio.sleep(retry_after)  # Ждем указанное время перед продолжением
+        return f"FLOOD_CONTROL:{retry_after}"  # Возвращаем информацию о времени ожидания
 
-## проверка череза Fragment
+    # Делаем паузу между запросами (чтобы избежать превышения лимита)
+    await asyncio.sleep(REQUEST_INTERVAL)  # Пауза 1 секунда между запросами
+
+
 async def check_username_via_fragment(username: str) -> str:
     """Проверка статуса через Fragment. Анализирует редирект и 'Unavailable'."""
     url_username = f"https://fragment.com/username/{username}"
@@ -51,12 +59,10 @@ async def check_username_via_fragment(username: str) -> str:
         async with aiohttp.ClientSession() as session:
             async with session.get(url_username, ssl=ssl_context, allow_redirects=True) as response:
                 final_url = str(response.url)
-
-                # Если нас редиректит на ?query={username}, значит имя свободно, статус на Fragment Unavailable
+                # Если нас редиректит на ?query={username}, значит имя свободно (не 100%, но точнее не получается)
                 if final_url == url_query:
                     print(f"[INFO] 🔹 Fragment сделал редирект на страницу поиска (Unavailable).")
                     return "Свободно"
-
                 # Если остались на странице /username/{username}, значит нужно проверять статус
                 html = await response.text()
                 return await analyze_username_page(html, username)
@@ -70,7 +76,6 @@ async def analyze_username_page(html: str, username: str) -> str:
     """Анализирует страницу конкретного юзернейма на Fragment."""
     soup = BeautifulSoup(html, 'html.parser')
 
-    # Проверяем явный статус "Available", "Sold" или "Taken"
     status_element = soup.find("span", class_="tm-section-header-status")
     if status_element:
         status_text = status_element.text.strip().lower()
@@ -87,3 +92,6 @@ async def analyze_username_page(html: str, username: str) -> str:
 
     print(f"[WARNING] ⚠️ Статус Fragment (username) не определён.")
     return "Невозможно определить"
+
+
+

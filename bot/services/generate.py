@@ -151,8 +151,6 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
 
     if not available_usernames:
         logging.warning("⚠️ Не найдено доступных username.")
-    else:
-        logging.info(f"✅ Итоговые доступные username: {available_usernames}")
 
     return list(available_usernames)
 
