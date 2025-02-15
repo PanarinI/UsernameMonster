@@ -112,7 +112,6 @@ async def main():
         app = web.Application()
         app.add_routes([
             web.get("/", handle_root),
-            web.head("/", handle_root),  # Добавляем HEAD-запросы
         ])
         app.router.add_post("/webhook", handle_update)  # ✅ Фиксированный путь
         app.on_shutdown.append(on_shutdown)  # Добавляем обработчик остановки
