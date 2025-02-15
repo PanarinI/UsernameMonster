@@ -10,6 +10,11 @@ IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"
 if IS_LOCAL:
     load_dotenv()  # Загружаем .env ТОЛЬКО при локальном запуске
 
+print("DEBUG: Проверяем переменные окружения")
+print(f"ENV HOST: {os.getenv('HOST')}")
+print(f"ENV DATABASE: {os.getenv('DTBS')}")
+print(f"ENV USER: {os.getenv('USER')}")
+print(f"ENV PASSWORD: {'✅' if os.getenv('PSWRD') else '❌ НЕ НАЙДЕНА'}")
 
 # Загружаем переменные окружения из Amvera
 DB_CONFIG = {
