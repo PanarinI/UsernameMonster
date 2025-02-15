@@ -86,9 +86,6 @@ async def handle_update(request):
 async def handle_root(request):
     logging.info("✅ Обработан GET-запрос на /")
     print("✅ Обработан GET-запрос на /")  # Чтобы точно увидеть в логах
-    curl - v
-    http: // namehuntbot - panarini.amvera.io /
-
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
 
 async def log_all_requests(app, handler):
