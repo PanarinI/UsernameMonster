@@ -69,10 +69,15 @@ async def on_startup():
             if not WEBHOOK_URL.startswith("https://"):
                 logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
 
+            # Устанавливаем Webhook
             await bot.set_webhook(WEBHOOK_URL)
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
+
         except Exception as e:
             logging.error(f"❌ Ошибка при установке Webhook: {e}")
+            print(f"❌ Ошибка при установке Webhook: {e}")
+            sys.exit(1)  # Прерываем запуск, если Webhook не установился
+
 
 
 async def on_shutdown(_):
@@ -142,7 +147,15 @@ async def start_server():
         logging.info("✅ Сервер запущен через AppRunner")
         print("✅ Сервер запущен через AppRunner")
 
-        # 🔥 Держим контейнер активным
+        # 🔎 Проверяем, что порт 80 реально открыт
+        if is_port_in_use(WEBAPP_PORT):
+            logging.info(f"🟢 Порт {WEBAPP_PORT} успешно открыт и слушает входящие запросы.")
+            print(f"🟢 Порт {WEBAPP_PORT} успешно открыт и слушает входящие запросы.")
+        else:
+            logging.error(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
+            print(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
+
+        # 🔥 Держим контейнер живым
         await asyncio.Event().wait()
 
     except Exception as e:
