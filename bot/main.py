@@ -132,9 +132,8 @@ async def start_server():
     try:
         app = await main()
 
-        # Если режим Polling, сервер не стартуем
         if IS_LOCAL:
-            return
+            return  # Polling → Сервер не запускаем
 
         runner = web.AppRunner(app)
         await runner.setup()
@@ -143,8 +142,8 @@ async def start_server():
         logging.info("✅ Сервер запущен через AppRunner")
         print("✅ Сервер запущен через AppRunner")
 
-        while True:
-            await asyncio.sleep(30)
+        # 🔥 Держим контейнер активным
+        await asyncio.Event().wait()
 
     except Exception as e:
         logging.error(f"❌ Ошибка запуска сервера: {e}")
