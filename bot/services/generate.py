@@ -124,7 +124,7 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
             checked_usernames.add(username)
 
             try:
-                result = await check_username_availability(bot, username)
+                result = await check_username_availability(username)
 
                 # 🛑 Если поймали `FLOOD_CONTROL`, сразу возвращаем его, чтобы бот остановился
                 if result.startswith("FLOOD_CONTROL"):

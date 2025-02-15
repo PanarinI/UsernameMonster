@@ -57,7 +57,7 @@ def is_valid_username(username: str) -> bool:
     return bool(re.match(pattern, username))
 
 
-### ✅ 4. ОБРАБОТЧИК ВВОДА USERNAME + ЗАЩИТА ОТ КОМАНД
+### ✅ 4. ОБРАБОТЧИК ВВОДА USERNAME
 @check_router.message(CheckUsernameStates.waiting_for_username)
 async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     """
@@ -90,7 +90,8 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
 
     # Если username корректен, проверяем username
     logging.info(f"🔄 Проверяем @{username} через Telegram API и Fragment...") # Логируем процесс проверки
-    result = await check_username_availability(bot, username)
+    waiting_message = await message.answer("⌛ Проверяю..")     # ⏳ Отправляем сообщение о начале генерации
+    result = await check_username_availability(username, save_to_db=True)
     logging.info(f"✅ Проверка завершена за {time.time() - check_start:.2f} сек. Результат: {result}")
 
     # ✅ Защита от None

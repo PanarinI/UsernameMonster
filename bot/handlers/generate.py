@@ -65,6 +65,9 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
 
         context_text = context_text[:config.MAX_CONTEXT_LENGTH]
 
+    # ⏳ Отправляем сообщение о начале генерации
+    waiting_message = await message.answer("⌛ Генерирую...")
+
     try:
         logging.info(f"🚀 Запуск генерации username по контексту: '{context_text}'")
         usernames = await asyncio.wait_for(

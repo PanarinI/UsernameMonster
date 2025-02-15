@@ -1,47 +1,20 @@
 import asyncio
 import aiohttp
 import ssl
-from aiogram import Bot
-from aiogram.exceptions import TelegramBadRequest, TelegramForbiddenError, TelegramRetryAfter
 from bs4 import BeautifulSoup
 from config import REQUEST_INTERVAL
+from database.database import save_username_to_db  # Импорт здесь, чтобы избежать циклических импортов
 
-
-
-async def check_username_availability(bot: Bot, username: str) -> str:
-    """Проверяет, свободен ли юзернейм в Telegram через API и Fragment."""
+async def check_username_availability(username: str, save_to_db: bool = False) -> str:
+    """Проверяет username и, если нужно, сохраняет в БД."""
     print(f"\n[STEP 1] 🔎 Начинаем проверку username: @{username}")
 
-    try:
-        print("[STEP 2] 🔹 Отправляем запрос в Telegram API...")
-        await bot.get_chat(f"@{username}")
-        print(f"[RESULT] ❌ Имя @{username} занято (найдено через API).")
-        return "Занято"
+    result = await check_username_via_fragment(username)  # Проверяем через Fragment
 
-    except TelegramForbiddenError:
-        print(f"[RESULT] ❌ Имя @{username} занято (бот был кикнут из чата).")
-        return "Занято"
+    if save_to_db:
+        await save_username_to_db(username=username, status=result, category="Пользовательская проверка", context="Ручная проверка", llm="none")
 
-    except TelegramBadRequest as e:
-        error_message = str(e).lower()
-        print(f"[INFO] ❗ Ошибка API: {error_message}")
-
-        if "chat not found" in error_message:
-            print(f"[STEP 3] 🔹 Имя @{username} не найдено в API. Проверяем через Fragment...")
-            return await check_username_via_fragment(username)
-
-        print(f"[ERROR] ❗ Неожиданная ошибка API: {error_message}")
-        return "Невозможно определить"
-
-    except TelegramRetryAfter as e:
-        # Когда Telegram возвращает сообщение с блокировкой (flood control)
-        retry_after = e.retry_after
-        print(f"⏳ Flood Control! Блокировка на {retry_after} секунд.")
-        await asyncio.sleep(retry_after)  # Ждем указанное время перед продолжением
-        return f"FLOOD_CONTROL:{retry_after}"  # Возвращаем информацию о времени ожидания
-
-    # Делаем паузу между запросами (чтобы избежать превышения лимита)
-    await asyncio.sleep(REQUEST_INTERVAL)  # Пауза 1 секунда между запросами
+    return result
 
 
 async def check_username_via_fragment(username: str) -> str:
@@ -49,7 +22,7 @@ async def check_username_via_fragment(username: str) -> str:
     url_username = f"https://fragment.com/username/{username}"
     url_query = f"https://fragment.com/?query={username}"
 
-    print("[STEP 4] 🔹 Отправляем запрос к Fragment...")
+    print("[STEP 2] 🔹 Отправляем запрос к Fragment...")
 
     ssl_context = ssl.create_default_context()
     ssl_context.check_hostname = False
@@ -63,6 +36,7 @@ async def check_username_via_fragment(username: str) -> str:
                 if final_url == url_query:
                     print(f"[INFO] 🔹 Fragment сделал редирект на страницу поиска (Unavailable).")
                     return "Свободно"
+
                 # Если остались на странице /username/{username}, значит нужно проверять статус
                 html = await response.text()
                 return await analyze_username_page(html, username)
@@ -92,6 +66,3 @@ async def analyze_username_page(html: str, username: str) -> str:
 
     print(f"[WARNING] ⚠️ Статус Fragment (username) не определён.")
     return "Невозможно определить"
-
-
-

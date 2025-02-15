@@ -65,7 +65,7 @@ async def get_available_usernames(bot: Bot, context: str, n: int = 3) -> list[st
         for username in usernames:
             if username in available_usernames:
                 continue
-            result = await check_username_availability(bot, username)
+            result = await check_username_availability(username)
             if result == "Свободно":
                 available_usernames.add(username)
                 if len(available_usernames) >= n:
