@@ -23,7 +23,7 @@ namehuntbot-panarini.amvera.io -- домен для вебхука
 amvera-panarini-cnpg-namehuntdb-rw.amvera.io
 
 <project_name>-<username>.db-msk0.amvera.tech
-namehuntdb-panarini.db-msk0.amvera.tech -- pgAdmin
+namehuntdb-panarini.db-msk0.amvera.tech -- DBeaver
 
 curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/getWebhookInfo"
 
