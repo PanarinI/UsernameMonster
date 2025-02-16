@@ -51,12 +51,17 @@ async def on_startup():
     dp.include_router(generate_router)
     dp.include_router(common_router)
 
+    # Удаляем Webhook перед запуском
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)  # Отключаем Webhook и удаляем зависшие обновления
+        logging.info("🛑 Webhook отключён! Очередь обновлений очищена.")
+    except Exception as e:
+        logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
+
     if IS_LOCAL:
-        await bot.delete_webhook()
-        logging.info("🛑 Webhook отключён! Бот работает через Polling.")
+        logging.info("🟢 Бот работает через Polling.")
     else:
         try:
-            await bot.delete_webhook()
             logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
             logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
             logging.info(f"📌 Webhook URL перед установкой: {WEBHOOK_URL}")
@@ -68,7 +73,7 @@ async def on_startup():
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:
             logging.error(f"❌ Ошибка при установке Webhook: {e}")
-            sys.exit(1)  # Прерываем запуск
+            sys.exit(1)  # Прерываем запуск, если вебхук не установился
 
 # === 🛑 Функция остановки бота ===
 async def on_shutdown(_):
