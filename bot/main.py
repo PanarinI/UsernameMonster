@@ -52,7 +52,6 @@ async def on_startup():
             await bot.delete_webhook()
             logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
             logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
-            logging.info(f"📌 Webhook URL перед установкой: {WEBHOOK_URL}")
 
             if not WEBHOOK_URL.startswith("https://"):
                 logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
@@ -160,7 +159,7 @@ async def start_server():
         site = web.TCPSite(runner, "0.0.0.0", WEBAPP_PORT)
         await site.start()
 
-        logging.info("✅ Сервер запущен через сраный Webhook")
+        logging.info("✅ Сервер запущен через Webhook")
 
         while True:
             await asyncio.sleep(360)  # ⬅️ Держим сервер живым

@@ -82,19 +82,34 @@ async def on_shutdown(_):
 # === 📩 Обработчик Webhook ===
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
-    logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
     time_start = time.time()
 
     try:
         update_data = await request.json()
+
+        if "callback_query" in update_data:
+            callback = update_data["callback_query"]
+            user = callback["from"]
+            message = callback.get("message", {})
+
+            clean_log = (
+                f"📩 Callback: {callback['data']}\n"
+                f"👤 От: {user.get('first_name', 'Неизвестный')} (@{user.get('username', 'Нет юзернейма')})\n"
+                f"💬 Сообщение: {message.get('text', 'Без текста')}"
+            )
+            logging.info(clean_log)
+
         update = Update(**update_data)
         await dp.feed_update(bot=bot, update=update)
+
         time_end = time.time()
         logging.info(f"⏳ Обработка запроса заняла {time_end - time_start:.4f} секунд")
         return web.Response()
+
     except Exception as e:
-        logging.error(f"❌ Ошибка обработки Webhook: {e}")
+        logging.error(f"❌ Ошибка обработки Webhook: {e}", exc_info=True)
         return web.Response(status=500)
+
 
 async def handle_root(request):
     logging.info("✅ Обработан GET-запрос на /")
