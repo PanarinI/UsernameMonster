@@ -2,6 +2,7 @@ import time
 import asyncio
 import sys
 import os
+import json
 import logging
 from aiohttp import web
 from setup import bot, dp
@@ -87,24 +88,39 @@ async def on_shutdown(_):
     logging.info("✅ Сессия закрыта.")
 
 
+import json
+
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
-    logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
     time_start = time.time()
+    raw_text = await request.text()
 
     try:
-        update_data = await request.json()
+        update_data = json.loads(raw_text)  # ✅ Разбираем JSON
+        update_id = update_data.get("update_id", "неизвестно")
         current_time = int(time.time())
 
         if "message" in update_data and "date" in update_data["message"]:
             message_time = update_data["message"]["date"]
-            if current_time - message_time > 15:  # Старые сообщения игнорируем
-                logging.warning(f"⚠️ Старый message, игнорируем: {message_time}")
+            if current_time - message_time > 15:
+                logging.warning(f"⚠️ Старый message, игнорируем (отправлено {message_time}, сейчас {current_time})")
+                response_time = time.time() - time_start
+                logging.info(f"🕒 Время обработки запроса: {response_time:.4f} сек")
                 return web.Response(status=200)
 
-        if "callback_query" in update_data and "id" in update_data["callback_query"]:
-            callback_id = update_data["callback_query"]["id"]
-            logging.info(f"🛠 Обрабатываем callback: {callback_id}")
+        if "callback_query" in update_data:
+            callback = update_data["callback_query"]
+            user = callback["from"]
+            message = callback.get("message", {})
+            button_data = callback["data"]
+
+            log_text = (
+                f"📩 Update ID: {update_id}\n"
+                f"👤 От: {user.get('first_name', 'Неизвестный')} (@{user.get('username', 'Нет юзернейма')})\n"
+                f"💬 Сообщение: {message.get('text', 'Без текста')}\n"
+                f"🔘 Нажата кнопка: {button_data}"
+            )
+            logging.info(log_text)
 
         update = Update(**update_data)
         await dp.feed_update(bot=bot, update=update)
@@ -113,11 +129,12 @@ async def handle_update(request):
         logging.info(f"⏳ Обработка запроса заняла {time_end - time_start:.4f} секунд")
         return web.Response()
 
+    except json.JSONDecodeError:
+        logging.error(f"❌ Ошибка парсинга JSON: {raw_text}")
+
     except Exception as e:
         logging.error(f"❌ Ошибка обработки Webhook: {e}", exc_info=True)
         return web.Response(status=500)
-
-
 
 
 async def handle_root(request):
@@ -130,12 +147,14 @@ async def main():
     """Главная функция запуска"""
     await on_startup()
 
+
     if IS_LOCAL:
         logging.info("🚀 Запускаем бота в режиме Polling...")
         await dp.start_polling(bot)  # 🚀 Гарантируем, что Polling запустится!
         return  # ⬅️ Без return код дальше не идёт и не завершает процесс
 
     # 🌐 Если режим Webhook
+    logging.info("⚡ БОТ ПЕРЕЗАПУЩЕН (контейнер стартовал заново)")
     app = web.Application()
     app.add_routes([
         web.get("/", handle_root),
