@@ -4,9 +4,6 @@ import logging
 import config
 from dotenv import load_dotenv
 
-# Настройка логирования
-logging.basicConfig(level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s")
-
 # Загружаем переменные окружения из .env (ТОЛЬКО для локального режима)
 IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
@@ -90,7 +87,7 @@ async def init_db():
     finally:
         await pool.release(conn)  # Освобождаем соединение
 
-async def save_username_to_db(username: str, status: str, context: str, category: str, llm: str, style: str = "None"):
+async def save_username_to_db(username: str, status: str, context: str, category: str, style: str = "None", llm: str = "None"):
     """Сохраняет username в базу данных."""
     if len(context) > config.MAX_CONTEXT_LENGTH:
         logging.warning(f"⚠️ Контекст слишком длинный ({len(context)} символов), обрезаем до {config.MAX_CONTEXT_LENGTH}.")
@@ -99,8 +96,8 @@ async def save_username_to_db(username: str, status: str, context: str, category
     conn = await get_connection()
     try:
         if INSERT_SQL:
-            await conn.execute(INSERT_SQL, username, status, category, context, llm, style)
-            logging.info(f"✅ Добавлен в БД: @{username} | {status} | {category} | {context} | {llm} | {style}")
+            await conn.execute(INSERT_SQL, username, status, category, context, style, llm)
+            logging.info(f"✅ Добавлен в БД: @{username} | {status} | {category} | {context} | {style} | {llm} ")
         else:
             logging.error("❌ INSERT_SQL не загружен! Файл insert_username.sql отсутствует.")
     except Exception as e:

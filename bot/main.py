@@ -1,10 +1,8 @@
 import time
-import socket
 import asyncio
 import sys
 import os
 import logging
-import asyncpg
 from aiohttp import web
 from setup import bot, dp
 from aiogram.types import Update
@@ -14,7 +12,7 @@ from handlers.check import check_router
 from handlers.common import common_router
 from handlers.help import help_router
 from database.database import init_db
-from utils.logger import setup_logging
+from logger import setup_logging
 
 # ✅ Настраиваем логирование
 setup_logging()
@@ -46,7 +44,12 @@ async def on_startup():
         except Exception as e:
             logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
 
-    await init_db()
+        logging.info("🟢 Локальный режим: инициализируем БД...")
+        await init_db()  # ✅ Теперь БД подключается только в локальном режиме
+        logging.info("✅ БД готова к работе!")
+
+    else:
+        logging.info("🌍 Облачный режим: БД будет использоваться через Webhook.")
 
     # Подключаем роутеры
     dp.include_router(start_router)
@@ -70,6 +73,7 @@ async def on_startup():
     except Exception as e:
         logging.error(f"❌ Ошибка при установке Webhook: {e}")
         sys.exit(1)  # Прерываем запуск, если вебхук не установился
+
 
 
 async def on_shutdown(_):
@@ -148,6 +152,7 @@ async def start_server():
         logging.error(f"❌ Ошибка запуска: {e}")
         sys.exit(1)
 
+logging.getLogger("asyncio").setLevel(logging.WARNING)  # ✅ Отключает DEBUG для asyncio
 
 if __name__ == "__main__":
     try:

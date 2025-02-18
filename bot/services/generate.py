@@ -19,21 +19,19 @@ BASE_URL = os.getenv("BASE_URL")
 # Создание клиента OpenAI для генерации username
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-async def generate_usernames(
-    context: str,
-    style: str,
-    n: int = config.GENERATED_USERNAME_COUNT
-) -> tuple[list[str], str]:
+async def generate_usernames(context: str, style: str | None, n: int) -> tuple[list[str], str]:
     """
-    Генерирует `n` username в указанном стиле и определяет категорию.
+    Генерирует `n` username в указанном стиле (или без стиля) и определяет категорию.
     """
     logging.info(f"📝 Генерация username: context='{context}', style='{style}', n={n}")
 
-    # Получаем описание стиля из config.STYLE_DESCRIPTIONS
-    style_description = config.STYLE_DESCRIPTIONS.get(style, "обычные username без особого стиля")
+    # ✅ Выбираем нужный промпт
+    if style:
+        prompt = config.PROMPT_WITH_STYLE.format(n=n, context=context, style=style)
+    else:
+        prompt = config.PROMPT_NO_STYLE.format(n=n, context=context)
 
-    # Формируем промпт с учетом стиля
-    prompt = config.PROMPT.format(n=n, context=context, style=style_description)
+    logging.info(f"📜 Используемый PROMPT:\n{prompt}")
 
     response = client.chat.completions.create(
         model=config.MODEL,
@@ -44,11 +42,7 @@ async def generate_usernames(
 
     logging.debug(f"API Response: {response}")
 
-    # Получаем usage-данные (токены)
-    input_tokens = response.usage.prompt_tokens if response.usage else 0
-    output_tokens = response.usage.completion_tokens if response.usage else 0
-    total_tokens = response.usage.total_tokens if response.usage else 0
-
+    # ✅ Разбираем ответ модели
     if response.choices and response.choices[0].message and response.choices[0].message.content:
         response_text = response.choices[0].message.content.strip()
         lines = [line.strip() for line in response_text.split("\n") if line.strip()]
@@ -58,42 +52,23 @@ async def generate_usernames(
             category = "Неизвестно"
             usernames_raw = lines[0] if lines else ""  # Если OpenAI вообще ничего не вернул
         else:
-            category = lines[0]
-            usernames_raw = lines[1]
+            # ✅ Убираем "Категория:" из первой строки
+            category = lines[0].replace("Категория:", "").strip()
+            usernames_raw = lines[1]  # Вторая строка — список username
 
         usernames = [u.strip() for u in usernames_raw.split(",")]
 
-        # Фильтрация username
-        valid_usernames = [username for username in usernames if is_valid_username(username)]
+        logging.info(f"✅ Итоговая категория: {category}")
+        logging.info(f"✅ Итоговые username: {usernames}")
 
-        # Гарантия, что список содержит только строки
-        valid_usernames = [str(u) for u in valid_usernames]
-
-        logging.debug(f"✅ Итоговая категория: {category}")
-        logging.debug(f"✅ Итоговые username: {valid_usernames} ({type(valid_usernames)})")
-
-        # === Вывод отчета в консоль ===
-        print("\n========== ОТЧЕТ ПО ГЕНЕРАЦИИ ==========")
-        print(f"📌 Контекст запроса: {context}")
-        print(f"📌 Стиль: {style} ({style_description})")
-        print(f"📌 Полный ответ модели:\n{response_text}")
-        print(f"📌 Категория: {category}")
-        print(f"📌 Сгенерированные username: {valid_usernames}")
-        print(f"📌 Токены: input={input_tokens}, output={output_tokens}, всего={total_tokens}")
-        print("========================================\n")
-
-        if not valid_usernames:
-            logging.warning("⚠️ Ошибка: Все username оказались недействительными.")
-            return [], category
-
-        return valid_usernames, category
+        return usernames, category
 
     else:
         logging.warning("⚠️ API не вернул корректные данные.")
         return [], "Неизвестно"
 
 
-async def get_available_usernames(bot: Bot, context: str, style: str, n: int):
+async def get_available_usernames(bot: Bot, context: str, style: str | None, n: int):
     """Запрашивает у модели генерацию username с учётом стиля."""
 
     # ✅ Принудительно приводим n к int, если вдруг пришла строка
@@ -114,7 +89,7 @@ async def get_available_usernames(bot: Bot, context: str, style: str, n: int):
 
         # Генерация username и category
         try:
-            usernames, category = await generate_usernames(context, style, n)  # ✅ Исправили передачу n
+            usernames, category = await generate_usernames(context, style or "", n)  # ✅ Исправлено, чтобы `None` → `""`
         except Exception as e:
             logging.error(f"❌ Ошибка генерации username через OpenAI: {e}")
             return []  # Ошибка в API AI - прерываем генерацию
@@ -135,6 +110,10 @@ async def get_available_usernames(bot: Bot, context: str, style: str, n: int):
 
             checked_usernames.add(username)
 
+            # ✅ ДОБАВЛЯЕМ ПРОВЕРКУ НА ВАЛИДНОСТЬ username
+            if not is_valid_username(username):
+                continue  # Пропускаем невалидные username
+
             try:
                 result = await check_username_availability(username)
 
@@ -152,7 +131,7 @@ async def get_available_usernames(bot: Bot, context: str, style: str, n: int):
             if result == "Свободно":
                 available_usernames.add(username)
 
-            await save_username_to_db(username=username, status=result, category=category, context=context, llm=config.MODEL)
+            await save_username_to_db(username=username, status=result, category=category, context=context, style=style, llm=config.MODEL)
 
             if len(available_usernames) >= n:
                 break  # Выходим из цикла, если набрали нужное количество
@@ -165,4 +144,3 @@ async def get_available_usernames(bot: Bot, context: str, style: str, n: int):
         logging.warning("⚠️ Не найдено доступных username.")
 
     return list(available_usernames)
-
