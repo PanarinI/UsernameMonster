@@ -94,21 +94,17 @@ async def handle_update(request):
 
     try:
         update_data = await request.json()
-
-        # 🔥 Проверяем дату сообщения или callback-запроса
         current_time = int(time.time())
 
         if "message" in update_data and "date" in update_data["message"]:
             message_time = update_data["message"]["date"]
-            if current_time - message_time > 5:  # Если сообщение старше 5 секунд — игнорируем
+            if current_time - message_time > 15:  # Старые сообщения игнорируем
                 logging.warning(f"⚠️ Старый message, игнорируем: {message_time}")
                 return web.Response(status=200)
 
         if "callback_query" in update_data and "id" in update_data["callback_query"]:
-            callback_time = update_data["callback_query"]["message"]["date"]
-            if current_time - callback_time > 15:  # Если callback старше 5 секунд — игнорируем
-                logging.warning(f"⚠️ Старый callback_query, игнорируем: {callback_time}")
-                return web.Response(status=200)
+            callback_id = update_data["callback_query"]["id"]
+            logging.info(f"🛠 Обрабатываем callback: {callback_id}")
 
         update = Update(**update_data)
         await dp.feed_update(bot=bot, update=update)
@@ -116,9 +112,11 @@ async def handle_update(request):
         time_end = time.time()
         logging.info(f"⏳ Обработка запроса заняла {time_end - time_start:.4f} секунд")
         return web.Response()
+
     except Exception as e:
-        logging.error(f"❌ Ошибка обработки Webhook: {e}")
+        logging.error(f"❌ Ошибка обработки Webhook: {e}", exc_info=True)
         return web.Response(status=500)
+
 
 
 
