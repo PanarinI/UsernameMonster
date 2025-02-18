@@ -2,8 +2,8 @@ import time
 import asyncio
 import sys
 import os
-import json
 import logging
+import config
 from aiohttp import web
 from setup import bot, dp
 from aiogram.types import Update

@@ -1,3 +1,5 @@
+import os
+
 ## модель         gemini-flash-1.5-8b    gemini-flash-1.5   gpt-4o     gpt-4o-mini     deepseek-chat   deepseek-r1
 MODEL = "gemini-flash-1.5"
 MAX_TOKENS = 40
@@ -41,10 +43,10 @@ AVAILABLE_USERNAME_COUNT = 3
 GENERATED_USERNAME_COUNT = 5
 
 # Максимальное количество итераций (попыток) генерации username
-GEN_ATTEMPTS = 5
+GEN_ATTEMPTS = os.getenv("GEN_ATTEMPTS")
 
 # Максимальное общее время ожидания генерации (в секундах)
-GEN_TIMEOUT = 25
+GEN_TIMEOUT = os.getenv("GEN_TIMEOUT")
 
 # Прерывание после нескольких пустых ответов
 MAX_EMPTY_RESPONSES = 3
@@ -52,9 +54,9 @@ MAX_EMPTY_RESPONSES = 3
 # Параметр для интервала между запросами (например, 1 секунда) -- способ избежать flood control exceeded
 REQUEST_INTERVAL = 0.3
 
-##Логирование
-LOG_LEVEL = "DEBUG"  # Можно менять на DEBUG, INFO, WARNING, ERROR, CRITICAL
+
+# Логирование
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")  # Читаем переменную из окружения, если нет — ставим INFO
 LOG_FILE = "bot.log"  # Оставьте пустым "", если хотите логи только в консоль
 LOG_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
-
 
