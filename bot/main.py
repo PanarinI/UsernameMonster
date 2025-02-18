@@ -34,35 +34,10 @@ WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 80))
 
 async def on_startup():
     """Запуск бота"""
-    logging.info("🚀 Запуск бота...")
+    logging.info(f"🔗 Устанавливаем вебхук: {WEBHOOK_URL}")
+    await init_db()
 
-    try:
-        await bot.delete_webhook(drop_pending_updates=True)  # 🔥 Очищаем старые запросы
-        logging.info("🛑 Webhook отключён! Очередь обновлений очищена.")
-        await asyncio.sleep(3)  # ⬅️ Добавляем задержку, чтобы избежать лимитов
-    except Exception as e:
-        logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
-
-    if not IS_LOCAL:
-        logging.info("🌍 Облачный режим: БД будет использоваться через Webhook.")
-
-        # 🔥 Если вебхук уже установлен, не ставим заново!
-        try:
-            webhook_info = await bot.get_webhook_info()
-            if webhook_info.url == WEBHOOK_URL:
-                logging.info("✅ Webhook уже установлен, пропускаем повторную установку.")
-                return
-
-            logging.info("🔄 Устанавливаем Webhook...")
-            await bot.set_webhook(WEBHOOK_URL)
-            logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
-        except Exception as e:
-            logging.error(f"❌ Ошибка при установке Webhook: {e}")
-            sys.exit(1)  # Прерываем запуск, если вебхук не установился
-
-
-
-    # Подключаем роутеры
+    # Подключаем обработчики команд
     dp.include_router(start_router)
     dp.include_router(help_router)
     dp.include_router(check_router)
@@ -70,21 +45,36 @@ async def on_startup():
     dp.include_router(common_router)
 
     if IS_LOCAL:
-        logging.info("🟢 Локальный режим: запускаем Polling.")
-        return
+        await bot.delete_webhook()
+        logging.info("🛑 Webhook отключён! Бот работает через Polling.")
+    else:
+        try:
+            await bot.delete_webhook()
+            logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
+            logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
+            logging.info(f"📌 Webhook URL перед установкой: {WEBHOOK_URL}")
 
-    # Устанавливаем Webhook в облаке
-    try:
-        if not WEBHOOK_URL.startswith("https://"):
-            logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
-            return
+            if not WEBHOOK_URL.startswith("https://"):
+                logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
 
-        await bot.set_webhook(WEBHOOK_URL)
-        logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
-    except Exception as e:
-        logging.error(f"❌ Ошибка при установке Webhook: {e}")
-        sys.exit(1)  # Прерываем запуск, если вебхук не установился
-
+            retries = 5
+            for attempt in range(retries):
+                try:
+                    await bot.set_webhook(WEBHOOK_URL)
+                    logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
+                    break  # Выход из цикла, если установка прошла успешно
+                except Exception as e:
+                    logging.error(f"❌ Ошибка при установке Webhook на попытке #{attempt + 1}: {e}")
+                    if attempt < retries - 1:  # Если не последняя попытка
+                        wait_time = 2 ** attempt  # Экспоненциальная задержка
+                        logging.info(f"⏳ Повторная попытка через {wait_time} секунд...")
+                        await asyncio.sleep(wait_time)
+                    else:
+                        logging.error("❌ Превышено количество попыток установки Webhook. Бот не может продолжить.")
+                        sys.exit(1)  # Прерываем запуск после максимального числа попыток
+        except Exception as e:
+            logging.error(f"❌ Ошибка при установке Webhook: {e}")
+            sys.exit(1)  # Прерываем запуск
 
 
 async def on_shutdown(_):
