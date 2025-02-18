@@ -19,3 +19,16 @@ def error_retry_kb() -> InlineKeyboardMarkup:
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb_list)
 
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+def styles_kb():
+    """Генерирует клавиатуру с вариантами стилей username."""
+    buttons = [
+        [InlineKeyboardButton(text="⚡ Эпичный", callback_data="epic")],
+        [InlineKeyboardButton(text="🎩 Строгий", callback_data="strict")],
+        [InlineKeyboardButton(text="🎭 Фанковый", callback_data="funky")],
+        [InlineKeyboardButton(text="🖤 Минималистичный", callback_data="minimal")],
+        [InlineKeyboardButton(text="🤡 Кринжовый", callback_data="cringe")]
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
+

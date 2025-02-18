@@ -5,5 +5,6 @@ CREATE TABLE IF NOT EXISTS generated_usernames (
     category TEXT, -- категория (например, бизнес, технологии).
     context TEXT NOT NULL, -- исходный запрос пользователя.
     llm TEXT NOT NULL, -- используемая LLM
+    style TEXT DEFAULT NULL, -- добавляем новый столбец style (по умолчанию NULL)
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP -- время генерации.
 );

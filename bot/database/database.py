@@ -90,24 +90,21 @@ async def init_db():
     finally:
         await pool.release(conn)  # Освобождаем соединение
 
-async def save_username_to_db(username: str, status: str, context: str, category: str, llm: str):
+async def save_username_to_db(username: str, status: str, context: str, category: str, llm: str, style: str = "None"):
     """Сохраняет username в базу данных."""
     if len(context) > config.MAX_CONTEXT_LENGTH:
-        logging.warning(
-            f"⚠️ Контекст слишком длинный ({len(context)} символов), обрезаем до {config.MAX_CONTEXT_LENGTH}."
-        )
-        context = context[:config.MAX_CONTEXT_LENGTH]  # Обрезаем строку до нужной длины
+        logging.warning(f"⚠️ Контекст слишком длинный ({len(context)} символов), обрезаем до {config.MAX_CONTEXT_LENGTH}.")
+        context = context[:config.MAX_CONTEXT_LENGTH]
 
     conn = await get_connection()
     try:
         if INSERT_SQL:
-            await conn.execute(INSERT_SQL, username, status, category, context, llm)
-            log_message = f"✅ Добавлен в БД: @{username} | {status} | {category} | {context} | {llm}"
-            logging.info(log_message)
-            print(log_message)
+            await conn.execute(INSERT_SQL, username, status, category, context, llm, style)
+            logging.info(f"✅ Добавлен в БД: @{username} | {status} | {category} | {context} | {llm} | {style}")
         else:
             logging.error("❌ INSERT_SQL не загружен! Файл insert_username.sql отсутствует.")
     except Exception as e:
         logging.error(f"❌ Ошибка при сохранении в БД: {e}")
     finally:
-        await pool.release(conn)  # Освобождаем соединение
+        await pool.release(conn)
+

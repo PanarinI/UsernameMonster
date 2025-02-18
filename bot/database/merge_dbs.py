@@ -49,7 +49,7 @@ try:
 
         # Вставляем запись в облачную базу, если id уникален (по id уже проверено, мы продолжим с нового)
         cloud_cursor.execute(
-            "INSERT INTO public.generated_usernames (id, username, status, category, context, llm) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO public.generated_usernames (id, username, status, category, context, llm, style) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             row
         )
 
@@ -62,7 +62,7 @@ try:
 
         # Вставляем запись с новым username, если она не существует в облачной базе
         cloud_cursor.execute(
-            "INSERT INTO public.generated_usernames (id, username, status, category, context, llm) VALUES (%s, %s, %s, %s, %s, %s)",
+            "INSERT INTO public.generated_usernames (id, username, status, category, context, llm, style) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             row
         )
 

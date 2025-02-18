@@ -90,7 +90,7 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
 
     # Если username корректен, проверяем username
     logging.info(f"🔄 Проверяем @{username} через Telegram API и Fragment...") # Логируем процесс проверки
-    waiting_message = await message.answer("⌛ Проверяю..")     # ⏳ Отправляем сообщение о начале генерации
+    waiting_message = await message.answer("⌛ Проверяю...")     # ⏳ Отправляем сообщение о начале генерации
     result = await check_username_availability(username, save_to_db=True)
     logging.info(f"✅ Проверка завершена за {time.time() - check_start:.2f} сек. Результат: {result}")
 
@@ -121,9 +121,9 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     logging.info(f"✅ Результат проверки @{username}: {result}")
 
     if result == "Свободно":
-        await message.answer(f"✅ Имя @{username} свободно! Это может быть твоё личное имя… или бренд твоего проекта?", reply_markup=check_result_kb())
+        await message.answer(f"✅ Имя @{username} свободно! Оно может стать твоим личным именем… или брендом твоего проекта?", reply_markup=check_result_kb())
     elif result == "Занято":
-        await message.answer(f"❌ Имя @{username} уже занято. Оно уже служит другому хозяину.", reply_markup=check_result_kb())
+        await message.answer(f"❌ Имя @{username} уже занято. Оно служит другому хозяину.", reply_markup=check_result_kb())
     elif result == "Продано":
         await message.answer(f"💰 Имя @{username} уже продано кому-то.", reply_markup=check_result_kb())
     elif result == "Доступно для покупки":

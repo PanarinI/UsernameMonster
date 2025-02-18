@@ -19,13 +19,21 @@ BASE_URL = os.getenv("BASE_URL")
 # Создание клиента OpenAI для генерации username
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_COUNT) -> tuple[list[str], str]:
+async def generate_usernames(
+    context: str,
+    style: str,
+    n: int = config.GENERATED_USERNAME_COUNT
+) -> tuple[list[str], str]:
     """
-    Генерирует `n` username и определяет категорию.
+    Генерирует `n` username в указанном стиле и определяет категорию.
     """
-    logging.info(f"📝 Генерация username: context='{context}', n={n}")
+    logging.info(f"📝 Генерация username: context='{context}', style='{style}', n={n}")
 
-    prompt = config.PROMPT.format(n=n, context=context)
+    # Получаем описание стиля из config.STYLE_DESCRIPTIONS
+    style_description = config.STYLE_DESCRIPTIONS.get(style, "обычные username без особого стиля")
+
+    # Формируем промпт с учетом стиля
+    prompt = config.PROMPT.format(n=n, context=context, style=style_description)
 
     response = client.chat.completions.create(
         model=config.MODEL,
@@ -67,6 +75,7 @@ async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_CO
         # === Вывод отчета в консоль ===
         print("\n========== ОТЧЕТ ПО ГЕНЕРАЦИИ ==========")
         print(f"📌 Контекст запроса: {context}")
+        print(f"📌 Стиль: {style} ({style_description})")
         print(f"📌 Полный ответ модели:\n{response_text}")
         print(f"📌 Категория: {category}")
         print(f"📌 Сгенерированные username: {valid_usernames}")
@@ -84,17 +93,20 @@ async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_CO
         return [], "Неизвестно"
 
 
-async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str] | str:
-    """
-    Возвращает `n` доступных username по контексту
-    Генерирует и проверяет имена по мере необходимости.
-    """
-    logging.info(f"🔎 Поиск {n} доступных username для контекста: '{context}'")
+async def get_available_usernames(bot: Bot, context: str, style: str, n: int):
+    """Запрашивает у модели генерацию username с учётом стиля."""
 
-    available_usernames = set()
-    checked_usernames = set()  # Уже проверенные username
-    attempts = 0  # Счетчик попыток генерации
-    empty_responses = 0  # Количество пустых ответов AI
+    # ✅ Принудительно приводим n к int, если вдруг пришла строка
+    try:
+        n = int(n)
+    except ValueError:
+        logging.error(f"❌ Ошибка: n должно быть числом, но пришло {type(n)} ({n})")
+        n = config.AVAILABLE_USERNAME_COUNT  # Используем значение по умолчанию
+
+    available_usernames = set()  # Используем set, чтобы избежать дубликатов
+    checked_usernames = set()  # Добавляем объявление переменной!
+    attempts = 0
+    empty_responses = 0  # Добавляем счётчик пустых ответов
 
     while len(available_usernames) < n and attempts < config.GEN_ATTEMPTS:
         attempts += 1
@@ -102,7 +114,7 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
 
         # Генерация username и category
         try:
-            usernames, category = await generate_usernames(context, n=config.GENERATED_USERNAME_COUNT)
+            usernames, category = await generate_usernames(context, style, n)  # ✅ Исправили передачу n
         except Exception as e:
             logging.error(f"❌ Ошибка генерации username через OpenAI: {e}")
             return []  # Ошибка в API AI - прерываем генерацию
@@ -115,7 +127,7 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
                 logging.error("❌ AI отказывается генерировать username. Останавливаем процесс.")
                 break
 
-            continue # Попытка генерации нового списка
+            continue  # Попытка генерации нового списка
 
         for username in usernames:
             if username in checked_usernames:
@@ -145,7 +157,7 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
             if len(available_usernames) >= n:
                 break  # Выходим из цикла, если набрали нужное количество
 
-            # Если все имена уже проверены и не хватает доступных, генерируем новый список
+        # Если все имена уже проверены и не хватает доступных, генерируем новый список
         if len(available_usernames) < n:
             logging.info("🔄 Генерация новых имен, так как не хватает доступных.")
 
