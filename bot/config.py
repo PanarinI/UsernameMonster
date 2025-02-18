@@ -1,9 +1,12 @@
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 ## модель         gemini-flash-1.5-8b    gemini-flash-1.5   gpt-4o     gpt-4o-mini     deepseek-chat   deepseek-r1
-MODEL = "gemini-flash-1.5"
-MAX_TOKENS = 40
-TEMPERATURE = 0.75
+MODEL = os.getenv("MODEL")
+MAX_TOKENS = int(os.getenv("MAX_TOKENS"))
+TEMPERATURE = float(os.getenv("TEMPERATURE"))
 
 ## генерация
 PROMPT_NO_STYLE = (
@@ -30,7 +33,13 @@ STYLE_DESCRIPTIONS = {
     "cringe": "абсурдные, нелепые, запоминающиеся username, которые могут выглядеть смешно или странно"
 }
 
-
+STYLE_TRANSLATIONS = {
+    "epic": "эпичный",
+    "strict": "строгий",
+    "funky": "фанк",
+    "minimal": "минимализм",
+    "cringe": "кринж"
+}
 
 
 # Максимальное количество символов в контексте
@@ -43,10 +52,11 @@ AVAILABLE_USERNAME_COUNT = 3
 GENERATED_USERNAME_COUNT = 5
 
 # Максимальное количество итераций (попыток) генерации username
-GEN_ATTEMPTS = os.getenv("GEN_ATTEMPTS")
+GEN_ATTEMPTS = int(os.getenv("GEN_ATTEMPTS"))
 
 # Максимальное общее время ожидания генерации (в секундах)
-GEN_TIMEOUT = os.getenv("GEN_TIMEOUT")
+GEN_TIMEOUT = int(os.getenv("GEN_TIMEOUT"))  # Преобразуем в число
+
 
 # Прерывание после нескольких пустых ответов
 MAX_EMPTY_RESPONSES = 3

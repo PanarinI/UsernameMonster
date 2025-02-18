@@ -1,5 +1,6 @@
 import logging
 import asyncio
+import re
 from aiogram import Bot, Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
@@ -9,7 +10,6 @@ from keyboards.main_menu import main_menu_kb, back_to_main_kb
 from .states import GenerateUsernameStates
 import config
 
-from aiogram.exceptions import TelegramRetryAfter
 
 generate_router = Router()
 
@@ -110,6 +110,18 @@ async def process_style_choice(query: types.CallbackQuery, state: FSMContext, bo
 
 
 
+def contains_cyrillic(text: str) -> bool:
+    """Проверяет, есть ли в тексте кириллические символы."""
+    return bool(re.search(r'[а-яА-Я]', text))
+
+
+def escape_md(text: str) -> str:
+    """Экранирует спецсимволы для MarkdownV2"""
+    if not text:
+        return ""
+    return re.sub(r'([_*[\]()~`>#+-=|{}.!])', r'\\\1', text)
+
+
 async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
     """
     Общая функция генерации username (вызывается и при выборе стиля, и без).
@@ -119,7 +131,10 @@ async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: B
 
     if not context_text:
         logging.error("⚠️ Ошибка: Контекст не найден в состоянии!")
-        await query.message.answer("❌ Ошибка: не удалось получить тему генерации. Начните заново.", reply_markup=main_menu_kb())
+        await query.message.answer(
+            "❌ Ошибка: не удалось получить тему генерации. Начните заново.",
+            reply_markup=main_menu_kb()
+        )
         await state.clear()
         return
 
@@ -137,11 +152,33 @@ async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: B
     logging.info("🔄 Вызываем get_available_usernames()...")
 
     try:
-        usernames = await asyncio.wait_for(
+        raw_usernames = await asyncio.wait_for(
             get_available_usernames(bot, context_text, style, config.AVAILABLE_USERNAME_COUNT),
             timeout=config.GEN_TIMEOUT
         )
-        logging.info("✅ Генерация завершена успешно")
+
+        logging.info(f"✅ Ответ AI до обработки: {raw_usernames}")
+
+        # 🚨 Проверяем отказ AI (до очистки)
+        usernames_cleaned = [u.strip() for u in raw_usernames if u.strip()]  # Убираем пустые строки
+        response_text = " ".join(usernames_cleaned).lower()
+
+        # 🚨 Проверяем, что ВЕСЬ СПИСОК username состоит из отказов
+        if all(any(phrase in username.lower() for phrase in ["не могу", "противоречит", "извините", "это запрещено", "не допускается"]) for username in usernames_cleaned):
+            logging.warning(f"❌ AI отказался генерировать username (контекст: '{context_text}', стиль: '{style}').")
+            await query.message.answer(
+                "❌ AI отказался генерировать имена по этическим соображениям. Попробуйте изменить запрос.",
+                reply_markup=error_retry_kb()
+            )
+            await state.clear()  # ⛔ Чистим состояние, чтобы не было зацикливания
+            return  # ⛔ СРАЗУ ВЫХОДИМ! Никаких попыток повторить генерацию!
+
+
+
+        # ✅ Теперь очищаем список от мусора (пустые строки, пробелы)
+        usernames = [u.strip() for u in raw_usernames if u.strip()]
+
+        logging.info(f"✅ Итоговый список username (после обработки): {usernames}")
 
     except asyncio.TimeoutError:
         logging.error(f"❌ Ошибка: Время ожидания генерации username истекло (контекст: '{context_text}', стиль: '{style}').")
@@ -149,21 +186,33 @@ async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: B
         await state.clear()
         return
 
+    logging.info(f"📜 Полученный список usernames: {usernames}")
+
+    # Если список username всё равно пустой, показываем другую ошибку
     if not usernames:
         logging.warning(f"❌ Генерация username не дала результатов (контекст: '{context_text}', стиль: '{style}').")
-        await query.message.answer("❌ Не удалось поймать имена. Возможно, тема слишком популярна. Попробуйте чуть изменить запрос или стиль!", reply_markup=error_retry_kb())
+        await query.message.answer(
+            "❌ Не удалось поймать имена. Возможно, тема слишком популярна. Попробуйте чуть изменить запрос или стиль!",
+            reply_markup=error_retry_kb()
+        )
         return
 
     logging.info(f"✅ Сгенерировано {len(usernames)} username: {usernames}")
 
     kb_usernames = generate_username_kb(usernames)
+
+    # Преобразуем стиль в русское название
+    style_rus = config.STYLE_TRANSLATIONS.get(style, style or "")
+
+    # Формируем текст с экранированными символами
+    text = f"Вот уникальные имена {'в стиле *' + escape_md(style_rus) + '*' if style else ''} на тему *{escape_md(context_text)}*:"
+
     await query.message.answer(
-        f"Вот три свободных имени {'в стиле ' + style if style else ''} на тему *{context_text}*:",
+        text,
         parse_mode="MarkdownV2",
         reply_markup=kb_usernames
     )
 
     logging.info("✅ Ответ пользователю отправлен, очищаем состояние")
     await state.clear()
-
 

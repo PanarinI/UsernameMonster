@@ -179,7 +179,7 @@ async def start_server():
         site = web.TCPSite(runner, "0.0.0.0", WEBAPP_PORT)
         await site.start()
 
-        logging.info("✅ Сервер запущен через сраный Webhook")
+        logging.info("✅ Сервер запущен через Webhook")
 
         while True:
             await asyncio.sleep(360)  # ⬅️ Держим сервер живым

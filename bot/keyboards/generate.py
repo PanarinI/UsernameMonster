@@ -1,4 +1,5 @@
 from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+import logging
 
 def generate_username_kb(usernames: list) -> InlineKeyboardMarkup:
     kb_list = [
@@ -36,10 +37,11 @@ def styles_kb():
     buttons = [
         [InlineKeyboardButton(text="🔥 Эпичный", callback_data="epic")],
         [InlineKeyboardButton(text="🎩 Строгий", callback_data="strict")],
-        [InlineKeyboardButton(text="🎨 Фанковый", callback_data="funky")]
+        [InlineKeyboardButton(text="🎨 Фанковый", callback_data="funky")],
         [InlineKeyboardButton(text="⚪ Минималистичный", callback_data="minimal")],
         [InlineKeyboardButton(text="🤡 Кринжовый", callback_data="cringe")],
         [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_main_style_menu")]
     ]
+    logging.debug("генерируем кнопки")  # 🔍 Отладочный принт
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
