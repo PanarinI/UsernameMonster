@@ -106,7 +106,7 @@ async def handle_update(request):
 
         if "callback_query" in update_data and "id" in update_data["callback_query"]:
             callback_time = update_data["callback_query"]["message"]["date"]
-            if current_time - callback_time > 5:  # Если callback старше 5 секунд — игнорируем
+            if current_time - callback_time > 15:  # Если callback старше 5 секунд — игнорируем
                 logging.warning(f"⚠️ Старый callback_query, игнорируем: {callback_time}")
                 return web.Response(status=200)
 
@@ -162,7 +162,7 @@ async def start_server():
         site = web.TCPSite(runner, "0.0.0.0", WEBAPP_PORT)
         await site.start()
 
-        logging.info("✅ Сервер запущен через Webhook")
+        logging.info("✅ Сервер запущен через сраный Webhook")
 
         while True:
             await asyncio.sleep(360)  # ⬅️ Держим сервер живым
