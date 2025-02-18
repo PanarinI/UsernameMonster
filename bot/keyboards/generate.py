@@ -34,10 +34,10 @@ def initial_styles_kb():
 def styles_kb():
     """Второй уровень меню: кнопки выбора стиля"""
     buttons = [
-        [InlineKeyboardButton(text="⚡ Эпичный", callback_data="epic")],
+        [InlineKeyboardButton(text="🔥 Эпичный", callback_data="epic")],
         [InlineKeyboardButton(text="🎩 Строгий", callback_data="strict")],
-        [InlineKeyboardButton(text="🎭 Фанковый", callback_data="funky")],
-        [InlineKeyboardButton(text="🖤 Минималистичный", callback_data="minimal")],
+        [InlineKeyboardButton(text="🎨 Фанковый", callback_data="funky")]
+        [InlineKeyboardButton(text="⚪ Минималистичный", callback_data="minimal")],
         [InlineKeyboardButton(text="🤡 Кринжовый", callback_data="cringe")],
         [InlineKeyboardButton(text="🔙 Назад", callback_data="back_to_main_style_menu")]
     ]
