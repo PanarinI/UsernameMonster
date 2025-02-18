@@ -100,19 +100,18 @@ async def handle_update(request):
         update_id = update_data.get("update_id", "неизвестно")
         current_time = int(time.time())
 
-        if "message" in update_data and "date" in update_data["message"]:
+        # Проверяем, нет ли устаревших событий
+        if "message" in update_data:
             message_time = update_data["message"]["date"]
-            if current_time - message_time > 15:
-                logging.warning(f"⚠️ Старый message, игнорируем (отправлено {message_time}, сейчас {current_time})")
-                response_time = time.time() - time_start
-                logging.info(f"🕒 Время обработки запроса: {response_time:.4f} сек")
+            if current_time - message_time > 15:  # Больше 15 секунд? Игнорируем!
+                logging.warning(f"⚠️ Старая команда ({message_time}), игнорируем.")
                 return web.Response(status=200)
 
         if "callback_query" in update_data:
-            callback = update_data["callback_query"]
-            user = callback["from"]
-            message = callback.get("message", {})
-            button_data = callback["data"]
+            callback_time = update_data["callback_query"].get("date", current_time)
+            if current_time - callback_time > 15:
+                logging.warning(f"⚠️ Старая callback-команда ({callback_time}), игнорируем.")
+                return web.Response(status=200)
 
             log_text = (
                 f"📩 Update ID: {update_id}\n"
@@ -147,11 +146,10 @@ async def main():
     """Главная функция запуска"""
     await on_startup()
 
-
     if IS_LOCAL:
         logging.info("🚀 Запускаем бота в режиме Polling...")
-        await dp.start_polling(bot)  # 🚀 Гарантируем, что Polling запустится!
-        return  # ⬅️ Без return код дальше не идёт и не завершает процесс
+        await dp.start_polling(bot)
+        sys.exit(0)  # <-- Прерываем выполнение, чтобы Webhook НЕ запускался!
 
     # 🌐 Если режим Webhook
     logging.info("⚡ БОТ ПЕРЕЗАПУЩЕН (контейнер стартовал заново)")
@@ -163,32 +161,34 @@ async def main():
     app.on_shutdown.append(on_shutdown)
     return app
 
-
 async def start_server():
     """Запуск сервера или Polling"""
     try:
         app = await main()
 
         if IS_LOCAL:
-            while True:
-                await asyncio.sleep(360)  # ⬅️ Держим процесс живым в Polling!
-            return
+            logging.info("🚀 Запускаем бота в режиме Polling...")
+            await dp.start_polling(bot)
+            sys.exit(0)  # ⛔️ Прерываем выполнение, чтобы Webhook НЕ запускался!
 
+        # 🌍 Webhook Mode
+        logging.info("✅ Запускаем бота в режиме Webhook...")
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, "0.0.0.0", WEBAPP_PORT)
         await site.start()
 
-        logging.info("✅ Сервер запущен через Webhook")
+        logging.info(f"✅ Webhook сервер запущен на порту {WEBAPP_PORT}")
 
-        while True:
-            await asyncio.sleep(360)  # ⬅️ Держим сервер живым
+        # ⏳ Ожидание завершения без `while True`
+        await asyncio.Event().wait()
 
     except Exception as e:
         logging.error(f"❌ Ошибка запуска: {e}")
         sys.exit(1)
 
 logging.getLogger("asyncio").setLevel(logging.WARNING)  # ✅ Отключает DEBUG для asyncio
+
 
 if __name__ == "__main__":
     try:

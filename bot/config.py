@@ -3,10 +3,10 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-## модель         gemini-flash-1.5-8b    gemini-flash-1.5   gpt-4o     gpt-4o-mini     deepseek-chat   deepseek-r1
+
 MODEL = os.getenv("MODEL")
 MAX_TOKENS = int(os.getenv("MAX_TOKENS"))
-TEMPERATURE = float(os.getenv("TEMPERATURE"))
+TEMPERATURE = float(os.getenv("TEMPERATURE", "0.7"))
 
 ## генерация
 PROMPT_NO_STYLE = (
