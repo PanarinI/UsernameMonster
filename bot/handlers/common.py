@@ -14,7 +14,7 @@ async def back_to_main_menu(query: types.CallbackQuery, state: FSMContext):
     # Сброс состояния пользователя, если оно задано
     await state.clear()
     await query.message.answer(
-        "Вы вернулись в главное меню.",
+        "Ты снова на главной тропе.",
         reply_markup=main_menu_kb()
     )
     await query.answer()  # Telegram требует подтверждения

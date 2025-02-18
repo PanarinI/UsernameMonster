@@ -1,10 +1,10 @@
 import time
-import traceback
 import socket
 import asyncio
 import sys
 import os
 import logging
+import asyncpg
 from aiohttp import web
 from setup import bot, dp
 from aiogram.types import Update
@@ -33,50 +33,47 @@ WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")
 WEBAPP_HOST = "0.0.0.0"
 WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 80))
 
-# === 🔎 Функция проверки доступности порта ===
-def is_port_in_use(port):
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        return s.connect_ex(("0.0.0.0", port)) == 0
 
-# === 🚀 Функция запуска бота ===
 async def on_startup():
     """Запуск бота"""
-    logging.info(f"🔗 Устанавливаем вебхук: {WEBHOOK_URL}")
+    logging.info("🚀 Запуск бота...")
+
+    # Удаляем Webhook перед запуском, если локальный режим
+    if IS_LOCAL:
+        try:
+            await bot.delete_webhook(drop_pending_updates=True)
+            logging.info("🛑 Webhook отключён! Очередь обновлений очищена.")
+        except Exception as e:
+            logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
+
     await init_db()
 
-    # Подключаем обработчики команд
+    # Подключаем роутеры
     dp.include_router(start_router)
     dp.include_router(help_router)
     dp.include_router(check_router)
     dp.include_router(generate_router)
     dp.include_router(common_router)
 
-    # Удаляем Webhook перед запуском
-    try:
-        await bot.delete_webhook(drop_pending_updates=True)  # Отключаем Webhook и удаляем зависшие обновления
-        logging.info("🛑 Webhook отключён! Очередь обновлений очищена.")
-    except Exception as e:
-        logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
-
     if IS_LOCAL:
-        logging.info("🟢 Бот работает через Polling.")
-    else:
-        try:
-            logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
-            logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
-            logging.info(f"📌 Webhook URL перед установкой: {WEBHOOK_URL}")
+        logging.info("🟢 Локальный режим: запускаем Polling.")
+        return
 
-            if not WEBHOOK_URL.startswith("https://"):
-                logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
+    # Устанавливаем Webhook в облаке
+    try:
+        if not WEBHOOK_URL.startswith("https://"):
+            logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
+            return
 
-            await bot.set_webhook(WEBHOOK_URL)
-            logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
-        except Exception as e:
-            logging.error(f"❌ Ошибка при установке Webhook: {e}")
-            sys.exit(1)  # Прерываем запуск, если вебхук не установился
+        await bot.set_webhook(WEBHOOK_URL)
+        logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при установке Webhook: {e}")
+        sys.exit(1)  # Прерываем запуск, если вебхук не установился
 
-# === 🛑 Функция остановки бота ===
+
 async def on_shutdown(_):
+    """Закрытие сессии перед остановкой"""
     logging.info("🚨 Бот остановлен! Закрываю сессию...")
     try:
         await bot.session.close()
@@ -84,7 +81,7 @@ async def on_shutdown(_):
         logging.error(f"❌ Ошибка при закрытии сессии: {e}")
     logging.info("✅ Сессия закрыта.")
 
-# === 📩 Обработчик Webhook ===
+
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
     logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
@@ -101,56 +98,59 @@ async def handle_update(request):
         logging.error(f"❌ Ошибка обработки Webhook: {e}")
         return web.Response(status=500)
 
+
 async def handle_root(request):
+    """Обработчик корневого запроса (проверка работы)"""
     logging.info("✅ Обработан GET-запрос на /")
     return web.Response(text="✅ Бот работает!", content_type="text/plain")
 
-# === 🚀 Основная логика ===
+
 async def main():
     """Главная функция запуска"""
     await on_startup()
 
     if IS_LOCAL:
-        await dp.start_polling(bot)
-    else:
-        app = web.Application()
-        app.add_routes([
-            web.get("/", handle_root),
-            web.post("/webhook", handle_update)
-        ])
-        app.on_shutdown.append(on_shutdown)
-        return app
+        logging.info("🚀 Запускаем бота в режиме Polling...")
+        await dp.start_polling(bot)  # 🚀 Гарантируем, что Polling запустится!
+        return  # ⬅️ Без return код дальше не идёт и не завершает процесс
 
-# === 🔥 Функция старта сервера ===
+    # 🌐 Если режим Webhook
+    app = web.Application()
+    app.add_routes([
+        web.get("/", handle_root),
+        web.post("/webhook", handle_update)
+    ])
+    app.on_shutdown.append(on_shutdown)
+    return app
+
+
 async def start_server():
+    """Запуск сервера или Polling"""
     try:
         app = await main()
+
         if IS_LOCAL:
-            return  # Локальный запуск → Polling
+            while True:
+                await asyncio.sleep(360)  # ⬅️ Держим процесс живым в Polling!
+            return
 
         runner = web.AppRunner(app)
         await runner.setup()
         site = web.TCPSite(runner, "0.0.0.0", WEBAPP_PORT)
         await site.start()
 
-        logging.info("✅ Сервер запущен через AppRunner")
-        print("✅ Сервер запущен через AppRunner")
+        logging.info("✅ Сервер запущен через Webhook")
 
-        # 🔎 Проверяем, что порт 80 реально открыт
-        if is_port_in_use(WEBAPP_PORT):
-            logging.info(f"🟢 Порт {WEBAPP_PORT} успешно открыт и слушает входящие запросы.")
-        else:
-            logging.error(f"❌ Порт {WEBAPP_PORT} НЕ открыт! Возможно, Amvera его не видит.")
-
-        # 🔥 Держим контейнер живым
         while True:
-            logging.info("♻️ Контейнер активен. Проверка раз в 30 секунд.")
-            await asyncio.sleep(30)
+            await asyncio.sleep(360)  # ⬅️ Держим сервер живым
+
     except Exception as e:
-        logging.error(f"❌ Ошибка запуска сервера: {e}")
+        logging.error(f"❌ Ошибка запуска: {e}")
         sys.exit(1)
 
-# === 🚀 Запуск сервера ===
-loop = asyncio.new_event_loop()
-asyncio.set_event_loop(loop)
-loop.run_until_complete(start_server())
+
+if __name__ == "__main__":
+    try:
+        asyncio.run(start_server())
+    except KeyboardInterrupt:
+        logging.info("🛑 Бот остановлен пользователем.")

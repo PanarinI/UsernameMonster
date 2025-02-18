@@ -107,7 +107,7 @@ async def back_to_main(query: types.CallbackQuery, state: FSMContext):
     await asyncio.sleep(0.05)
 
     await query.message.answer(
-        "Вы вернулись в главное меню.",
+        "Ты снова на главной тропе.",
         reply_markup=main_menu_kb()  # Показываем главное меню
     )
     await query.answer()

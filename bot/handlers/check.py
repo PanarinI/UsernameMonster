@@ -25,7 +25,7 @@ async def cmd_check_slash(message: types.Message, state: FSMContext):
     await state.clear()  # ⛔ Принудительно очищаем ВСЕ состояния
     await asyncio.sleep(0.05)  # 🔄 Даем FSM время сброситься
 
-    await message.answer("Введите username для проверки (без @):",
+    await message.answer("Введи username для проверки (без @):",
                          reply_markup=back_to_main_kb() # Добавляем кнопку "🔙 В меню"
     )
     await state.set_state(CheckUsernameStates.waiting_for_username)
@@ -41,7 +41,7 @@ async def cmd_check(query: types.CallbackQuery, state: FSMContext):
     await state.clear()  # ⛔ Очищаем состояние перед новой командой
     await asyncio.sleep(0.05)  # 🔄 Даем FSM время очиститься
 
-    await query.message.answer("Введите username для проверки (без @):",
+    await query.message.answer("Введи username для проверки (без @):",
                                reply_markup=back_to_main_kb()
     )
     await state.set_state(CheckUsernameStates.waiting_for_username)
@@ -121,11 +121,11 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     logging.info(f"✅ Результат проверки @{username}: {result}")
 
     if result == "Свободно":
-        await message.answer(f"✅ Имя @{username} свободно!", reply_markup=check_result_kb())
+        await message.answer(f"✅ Имя @{username} свободно! Это может быть твоё личное имя… или бренд твоего проекта?", reply_markup=check_result_kb())
     elif result == "Занято":
-        await message.answer(f"❌ Имя @{username} занято.", reply_markup=check_result_kb())
+        await message.answer(f"❌ Имя @{username} уже занято. Оно уже служит другому хозяину.", reply_markup=check_result_kb())
     elif result == "Продано":
-        await message.answer(f"💰 Имя @{username} уже продано и больше недоступно.", reply_markup=check_result_kb())
+        await message.answer(f"💰 Имя @{username} уже продано кому-то.", reply_markup=check_result_kb())
     elif result == "Доступно для покупки":
         fragment_url = f"https://fragment.com/username/{username}"
         await message.answer(
@@ -136,7 +136,7 @@ async def check_username(message: types.Message, bot: Bot, state: FSMContext):
     elif result == "Свободно, но не на продаже":
         await message.answer(f"✅ Имя @{username} свободно!", reply_markup=check_result_kb())
     elif result == "Недоступно":
-        await message.answer(f"⚠️ Имя @{username} занято, но не продаётся (Not for sale).", reply_markup=check_result_kb())
+        await message.answer(f"⚠️ Имя @{username} занято и не продаётся (Not for sale).", reply_markup=check_result_kb())
     else:
         await message.answer(f"⚠️ Не удалось определить доступность @{username}.", reply_markup=check_result_kb())
 

@@ -23,7 +23,7 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
 
     await state.clear()  # Очищаем состояние перед новой командой
     await asyncio.sleep(0.05)  # ✅ Даем FSM время сброситься
-    await query.message.answer("Введите тему/контекст для генерации username (макс. 200 знаков):",
+    await query.message.answer("О чём должно шептать имя? Пример: «киберпанк», «котики», «темная магия»",
                                reply_markup=back_to_main_kb())
     await state.set_state(GenerateUsernameStates.waiting_for_context)
     await query.answer()  # Telegram требует подтверждения, что callback обработан.
@@ -66,7 +66,7 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
         context_text = context_text[:config.MAX_CONTEXT_LENGTH]
 
     # ⏳ Отправляем сообщение о начале генерации
-    waiting_message = await message.answer("⌛ Генерирую...")
+    waiting_message = await message.answer("⌛ Выслеживаю... Прислушиваюсь к цифровому эфиру... Кажется, я нашёл что-то")
 
     try:
         logging.info(f"🚀 Запуск генерации username по контексту: '{context_text}'")
@@ -90,7 +90,7 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
 
     except asyncio.TimeoutError:
         logging.error(f"❌ Ошибка: Время ожидания генерации username истекло (контекст: '{context_text}').")
-        await message.answer("Генерация username заняла слишком много времени. Попробуйте позже.",
+        await message.answer("⏳ Имялов прочесал цифровые просторы, но вернулся без добычи… Слишком много охотников в этом направлении, а может быть Сервер устал.",
                              reply_markup=main_menu_kb())
         await state.clear()
         return
@@ -111,7 +111,7 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
     if not usernames:
         logging.warning(f"❌ Генерация username не дала результатов (контекст: '{context_text}').")
         await message.answer(
-            "❌ Не удалось сгенерировать доступные username. Попробуйте снова или вернитесь в главное меню.",
+            "❌ Не удалось выловить подходящие имена… Возможно, цифровой океан сегодня неспокоен.",
             reply_markup=error_retry_kb()
         )
         return  # Завершаем выполнение
@@ -121,7 +121,7 @@ async def process_context_input(message: types.Message, bot: Bot, state: FSMCont
     # Отправляем пользователю список username
     kb_usernames = generate_username_kb(usernames)
     await message.answer(
-        f"Вот сгенерированные для вас username по теме '{context_text}':",
+        f"Вот три свободные сущности, которые можно назвать твоими. Лови! '{context_text}':",
         reply_markup=kb_usernames
     )
     await state.clear()
