@@ -36,20 +36,22 @@ async def on_startup():
     """Запуск бота"""
     logging.info("🚀 Запуск бота...")
 
-    # Удаляем Webhook перед запуском, если локальный режим
-    if IS_LOCAL:
-        try:
-            await bot.delete_webhook(drop_pending_updates=True)
-            logging.info("🛑 Webhook отключён! Очередь обновлений очищена.")
-        except Exception as e:
-            logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
+    try:
+        await bot.delete_webhook(drop_pending_updates=True)  # 🔥 Очищаем старые запросы при запуске
+        logging.info("🛑 Webhook отключён! Очередь обновлений очищена.")
+    except Exception as e:
+        logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
 
-        logging.info("🟢 Локальный режим: инициализируем БД...")
-        await init_db()  # ✅ Теперь БД подключается только в локальном режиме
-        logging.info("✅ БД готова к работе!")
-
-    else:
+    # Устанавливаем Webhook в облаке
+    if not IS_LOCAL:
         logging.info("🌍 Облачный режим: БД будет использоваться через Webhook.")
+        try:
+            await bot.set_webhook(WEBHOOK_URL)
+            logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
+        except Exception as e:
+            logging.error(f"❌ Ошибка при установке Webhook: {e}")
+            sys.exit(1)  # Прерываем запуск, если вебхук не установился
+
 
     # Подключаем роутеры
     dp.include_router(start_router)
@@ -93,14 +95,32 @@ async def handle_update(request):
 
     try:
         update_data = await request.json()
+
+        # 🔥 Проверяем дату сообщения или callback-запроса
+        current_time = int(time.time())
+
+        if "message" in update_data and "date" in update_data["message"]:
+            message_time = update_data["message"]["date"]
+            if current_time - message_time > 5:  # Если сообщение старше 5 секунд — игнорируем
+                logging.warning(f"⚠️ Старый message, игнорируем: {message_time}")
+                return web.Response(status=200)
+
+        if "callback_query" in update_data and "id" in update_data["callback_query"]:
+            callback_time = update_data["callback_query"]["message"]["date"]
+            if current_time - callback_time > 5:  # Если callback старше 5 секунд — игнорируем
+                logging.warning(f"⚠️ Старый callback_query, игнорируем: {callback_time}")
+                return web.Response(status=200)
+
         update = Update(**update_data)
         await dp.feed_update(bot=bot, update=update)
+
         time_end = time.time()
         logging.info(f"⏳ Обработка запроса заняла {time_end - time_start:.4f} секунд")
         return web.Response()
     except Exception as e:
         logging.error(f"❌ Ошибка обработки Webhook: {e}")
         return web.Response(status=500)
+
 
 
 async def handle_root(request):

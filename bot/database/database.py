@@ -54,6 +54,8 @@ async def init_db_pool():
         logging.info("✅ Пул соединений к БД создан.")
     except Exception as e:
         logging.error(f"❌ Ошибка при создании пула соединений: {e}")
+        pool = None  # Чтобы бот не падал
+
 
 async def get_connection():
     """Получает соединение из пула."""

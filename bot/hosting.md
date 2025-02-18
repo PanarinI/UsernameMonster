@@ -31,6 +31,10 @@ curl "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank
 Invoke-WebRequest -Uri "https://namehuntbot-panarini.amvera.io/webhook"
 
 
+curl -X POST "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/deleteWebhook"
+
+curl -X POST "https://api.telegram.org/bot7289285845:AAFqSMaDwrpCPF92MP2IV4igpKndiGVnank/deleteWebhook?drop_pending_updates=true"
+
 
 
 git add .
