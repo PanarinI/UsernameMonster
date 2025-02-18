@@ -88,26 +88,38 @@ async def on_shutdown(_):
 
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
-    logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
     time_start = time.time()
+    current_time = int(time.time())
 
     try:
         update_data = await request.json()
-        current_time = int(time.time())
+        update_type = "message" if "message" in update_data else "callback_query" if "callback_query" in update_data else "unknown"
+        logging.info(f"📩 Получен {update_type} (update_id={update_data.get('update_id', 'неизвестно')})")
 
+        # Проверяем возраст обычных сообщений
         if "message" in update_data and "date" in update_data["message"]:
             message_time = update_data["message"]["date"]
-            if current_time - message_time > 15:  # Старые сообщения игнорируем
+            if current_time - message_time > 15:
                 logging.warning(f"⚠️ Старый message, игнорируем: {message_time}")
                 return web.Response(status=200)
 
-        if "callback_query" in update_data and "id" in update_data["callback_query"]:
-            callback_id = update_data["callback_query"]["id"]
+        # Проверяем возраст callback'ов
+        if "callback_query" in update_data:
+            callback = update_data["callback_query"]
+            callback_time = callback.get("message", {}).get("date", current_time)
+
+            if current_time - callback_time > 15:
+                logging.warning(f"⚠️ Старый callback_query, игнорируем: {callback_time}")
+                return web.Response(status=200)
+
+            callback_id = callback["id"]
             logging.info(f"🛠 Обрабатываем callback: {callback_id}")
 
+        # Отправляем событие в Aiogram
         update = Update(**update_data)
         await dp.feed_update(bot=bot, update=update)
 
+        # Логируем время обработки
         time_end = time.time()
         logging.info(f"⏳ Обработка запроса заняла {time_end - time_start:.4f} секунд")
         return web.Response()
@@ -115,8 +127,6 @@ async def handle_update(request):
     except Exception as e:
         logging.error(f"❌ Ошибка обработки Webhook: {e}", exc_info=True)
         return web.Response(status=500)
-
-
 
 
 async def handle_root(request):
