@@ -116,8 +116,8 @@ async def handle_update(request):
 
             log_text = (
                 f"📩 Update ID: {update_id}\n"
-                f"👤 От: {user.get('first_name', 'Неизвестный')} (@{user.get('username', 'Нет юзернейма')})\n"
-                f"💬 Сообщение: {message.get('text', 'Без текста')}\n"
+                f"👤 Пользователь: {user.get('first_name', 'Неизвестный')} (@{user.get('username', 'Нет юзернейма')})\n"
+                f"💬 Сообщение от бота: {message.get('text', 'Без текста')}\n"
                 f"🔘 Нажата кнопка: {button_data}"
             )
             logging.info(log_text)

@@ -151,7 +151,7 @@ async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: B
 
     if not usernames:
         logging.warning(f"❌ Генерация username не дала результатов (контекст: '{context_text}', стиль: '{style}').")
-        await query.message.answer("❌ Не удалось поймать имена. Возможно, тема слишком популярна. Попробуйте другой стиль!", reply_markup=error_retry_kb())
+        await query.message.answer("❌ Не удалось поймать имена. Возможно, тема слишком популярна. Попробуйте чуть изменить запрос или стиль!", reply_markup=error_retry_kb())
         return
 
     logging.info(f"✅ Сгенерировано {len(usernames)} username: {usernames}")

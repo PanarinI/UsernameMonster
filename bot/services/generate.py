@@ -2,6 +2,7 @@ from aiogram import Bot
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
+import json
 import logging
 import config
 from services.check import check_username_availability  # Проверка username
@@ -44,9 +45,9 @@ async def generate_usernames(context: str, style: str | None, n: int) -> tuple[l
     # ✅ Чистый лог запроса без текста промпта
     logging.debug(
         f"📡 Запрос к API: "
-        f"model={request_options['json_data']['model']}, "
-        f"max_tokens={request_options['json_data'].get('max_tokens', 'не указано')}, "
-        f"temperature={request_options['json_data'].get('temperature', 'не указано')}, "
+        f"model={config.MODEL}, "
+        f"max_tokens={config.MAX_TOKENS}, "
+        f"temperature={config.TEMPERATURE}, "
         f"prompt_type={prompt_type}"
     )
 
