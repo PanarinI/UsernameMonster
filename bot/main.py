@@ -37,20 +37,29 @@ async def on_startup():
     logging.info("🚀 Запуск бота...")
 
     try:
-        await bot.delete_webhook(drop_pending_updates=True)  # 🔥 Очищаем старые запросы при запуске
+        await bot.delete_webhook(drop_pending_updates=True)  # 🔥 Очищаем старые запросы
         logging.info("🛑 Webhook отключён! Очередь обновлений очищена.")
+        await asyncio.sleep(3)  # ⬅️ Добавляем задержку, чтобы избежать лимитов
     except Exception as e:
         logging.warning(f"⚠️ Не удалось удалить Webhook: {e}")
 
-    # Устанавливаем Webhook в облаке
     if not IS_LOCAL:
         logging.info("🌍 Облачный режим: БД будет использоваться через Webhook.")
+
+        # 🔥 Если вебхук уже установлен, не ставим заново!
         try:
+            webhook_info = await bot.get_webhook_info()
+            if webhook_info.url == WEBHOOK_URL:
+                logging.info("✅ Webhook уже установлен, пропускаем повторную установку.")
+                return
+
+            logging.info("🔄 Устанавливаем Webhook...")
             await bot.set_webhook(WEBHOOK_URL)
             logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:
             logging.error(f"❌ Ошибка при установке Webhook: {e}")
             sys.exit(1)  # Прерываем запуск, если вебхук не установился
+
 
 
     # Подключаем роутеры
@@ -179,3 +188,8 @@ if __name__ == "__main__":
         asyncio.run(start_server())
     except KeyboardInterrupt:
         logging.info("🛑 Бот остановлен пользователем.")
+    except Exception as e:
+        logging.error(f"❌ Критическая ошибка: {e}")
+
+    while True:
+        time.sleep(3600)  # ⬅️ Держим процесс живым
