@@ -28,10 +28,11 @@ async def generate_usernames(context: str, style: str | None, n: int) -> tuple[l
     # ✅ Выбираем нужный промпт
     if style:
         prompt = config.PROMPT_WITH_STYLE.format(n=n, context=context, style=style)
+        prompt_type = "WITH STYLE"
     else:
         prompt = config.PROMPT_NO_STYLE.format(n=n, context=context)
+        prompt_type = "NO STYLE"
 
-    logging.info(f"📜 Используемый PROMPT:\n{prompt}")
 
     response = client.chat.completions.create(
         model=config.MODEL,
@@ -40,7 +41,14 @@ async def generate_usernames(context: str, style: str | None, n: int) -> tuple[l
         temperature=config.TEMPERATURE,
     )
 
-    logging.debug(f"API Response: {response}")
+    # ✅ Чистый лог запроса без текста промпта
+    logging.debug(
+        f"📡 Запрос к API: "
+        f"model={request_options['json_data']['model']}, "
+        f"max_tokens={request_options['json_data'].get('max_tokens', 'не указано')}, "
+        f"temperature={request_options['json_data'].get('temperature', 'не указано')}, "
+        f"prompt_type={prompt_type}"
+    )
 
     # ✅ Разбираем ответ модели
     if response.choices and response.choices[0].message and response.choices[0].message.content:

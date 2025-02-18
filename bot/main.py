@@ -89,44 +89,26 @@ async def on_shutdown(_):
 
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
+    logging.info(f"📩 Получен запрос от Telegram: {await request.text()}")
     time_start = time.time()
 
     try:
         update_data = await request.json()
         current_time = int(time.time())
 
-        # Логируем только ключевую информацию, а не весь JSON
-        update_type = "message" if "message" in update_data else "callback_query" if "callback_query" in update_data else "unknown"
-        update_id = update_data.get("update_id", "неизвестно")
-        logging.info(f"📩 Получен {update_type} (update_id={update_id})")
-
-        # Проверяем возраст сообщений
         if "message" in update_data and "date" in update_data["message"]:
             message_time = update_data["message"]["date"]
-            if current_time - message_time > 15:
-                logging.warning(f"⚠️ Старый message, игнорируем (отправлено {message_time}, сейчас {current_time})")
+            if current_time - message_time > 15:  # Старые сообщения игнорируем
+                logging.warning(f"⚠️ Старый message, игнорируем: {message_time}")
                 return web.Response(status=200)
 
-        # Логируем callback без мусора
         if "callback_query" in update_data and "id" in update_data["callback_query"]:
-            callback = update_data["callback_query"]
-            callback_id = callback["id"]
-            user = callback["from"]
-            message = callback.get("message", {})
+            callback_id = update_data["callback_query"]["id"]
+            logging.info(f"🛠 Обрабатываем callback: {callback_id}")
 
-            # Чистый лог
-            clean_log = (
-                f"🛠 Callback: {callback['data']}\n"
-                f"👤 От: {user.get('first_name', 'Неизвестный')} (@{user.get('username', 'Нет юзернейма')})\n"
-                f"💬 Сообщение: {message.get('text', 'Без текста')}"
-            )
-            logging.info(clean_log)
-
-        # Передаём событие в Aiogram
         update = Update(**update_data)
         await dp.feed_update(bot=bot, update=update)
 
-        # Логируем время обработки
         time_end = time.time()
         logging.info(f"⏳ Обработка запроса заняла {time_end - time_start:.4f} секунд")
         return web.Response()
