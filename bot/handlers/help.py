@@ -3,7 +3,7 @@ from aiogram import Router, types, F
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from keyboards.main_menu import back_to_main_kb
-from utils.texts import get_help_text  # Импортируем текст справки
+from texts import get_help_text  # Импортируем текст справки
 
 
 help_router = Router()  # Создаём Router

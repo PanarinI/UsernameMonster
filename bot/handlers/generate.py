@@ -121,6 +121,19 @@ def escape_md(text: str) -> str:
         return ""
     return re.sub(r'([_*[\]()~`>#+-=|{}.!])', r'\\\1', text)
 
+async def send_progress_messages(query: types.CallbackQuery):
+    """Фоновая отправка сообщений о процессе генерации."""
+    messages = [
+        "Выслеживаю...",
+        "Прислушиваюсь к цифровому эфиру...",
+    ]
+
+    sent_messages = []
+    for msg in messages:
+        sent_messages.append(await query.message.answer(msg))
+        await asyncio.sleep(3)  # Задержка перед следующим сообщением
+
+    return sent_messages  # Список отправленных сообщений
 
 async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
     """
@@ -144,15 +157,20 @@ async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: B
     try:
         # 🔄 Отправляем анимированное эмодзи ⏳ (если у пользователя Telegram Premium, оно будет анимированным)
         await query.message.answer("⏳")
-        await asyncio.sleep(1)  # Делаем небольшую паузу перед следующим сообщением
+        await asyncio.sleep(2)  # Делаем небольшую паузу перед следующим сообщением
 
         # 📩 Теперь отправляем основное сообщение
-        waiting_message = await query.message.answer("Выслеживаю... Прислушиваюсь к цифровому эфиру...")
+        waiting_message = await query.message.answer("Выслеживаю... ")
+        await asyncio.sleep(3)  # Делаем небольшую паузу перед следующим сообщением
+        waiting_message = await query.message.answer("Прислушиваюсь к цифровому эфиру...")
 
         logging.info("✅ Сообщение о начале генерации отправлено")
     except Exception as e:
         logging.error(f"❌ Ошибка при отправке сообщения о генерации: {e}")
         return
+
+    # Запускаем отправку сообщений в фоновом режиме
+    progress_task = asyncio.create_task(send_progress_messages(query))
 
     # ✅ Вызываем генерацию
     logging.info("🔄 Вызываем get_available_usernames()...")
@@ -162,6 +180,9 @@ async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: B
             get_available_usernames(bot, context_text, style, config.AVAILABLE_USERNAME_COUNT),
             timeout=config.GEN_TIMEOUT
         )
+
+        # Отменяем процесс, если генерация завершилась раньше
+        progress_task.cancel()
 
         logging.info(f"✅ Ответ AI до обработки: {raw_usernames}")
 
@@ -177,8 +198,7 @@ async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: B
                 reply_markup=error_retry_kb()
             )
             await state.clear()  # ⛔ Чистим состояние, чтобы не было зацикливания
-            return  # ⛔ СРАЗУ ВЫХОДИМ! Никаких попыток повторить генерацию!
-
+            return  # ⛔ Выходим
 
 
         # ✅ Теперь очищаем список от мусора (пустые строки, пробелы)

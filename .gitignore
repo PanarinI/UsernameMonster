@@ -4,7 +4,7 @@
 
 #bot/config.py
 .env
-skills.md
+../BOT_AND_KOT/skills.md
 
 __pycache__/
 .idea/
