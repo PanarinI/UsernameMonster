@@ -108,10 +108,17 @@ async def handle_update(request):
                 return web.Response(status=200)
 
         if "callback_query" in update_data:
-            callback_time = update_data["callback_query"].get("date", current_time)
+            callback = update_data["callback_query"]
+            callback_time = callback.get("date", current_time)
+
             if current_time - callback_time > 15:
                 logging.warning(f"⚠️ Старая callback-команда ({callback_time}), игнорируем.")
                 return web.Response(status=200)
+
+            # ✅ Фикс: теперь `user` определён всегда
+            user = callback.get("from", {})
+            message = callback.get("message", {})
+            button_data = callback.get("data", "Нет данных")
 
             log_text = (
                 f"📩 Update ID: {update_id}\n"
