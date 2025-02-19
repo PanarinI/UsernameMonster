@@ -12,6 +12,7 @@ from handlers.generate import generate_router
 from handlers.check import check_router
 from handlers.common import common_router
 from handlers.help import help_router
+from handlers.group import group_router
 from database.database import init_db
 from logger import setup_logging
 
@@ -44,6 +45,7 @@ async def on_startup():
     dp.include_router(check_router)
     dp.include_router(generate_router)
     dp.include_router(common_router)
+    dp.include_router(group_router)
 
     if IS_LOCAL:
         await bot.delete_webhook()
