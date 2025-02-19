@@ -1,14 +1,17 @@
+import os
+import time
+import logging
+from dotenv import load_dotenv
+import asyncio
 from aiogram import Bot
 from openai import OpenAI
-from dotenv import load_dotenv
-import os
-import json
-import logging
-import config
-from services.check import check_username_availability  # Проверка username
+
+from services.check import check_multiple_usernames  # Проверка username
 from handlers.check import is_valid_username  # Валидация username
 from database.database import save_username_to_db
-from aiogram.exceptions import TelegramRetryAfter
+
+import config
+
 
 # Загрузка переменных окружения и настройка логирования
 load_dotenv()
@@ -78,30 +81,31 @@ async def generate_usernames(context: str, style: str | None, n: int) -> tuple[l
 
 
 async def get_available_usernames(bot: Bot, context: str, style: str | None, n: int):
-    """Запрашивает у модели генерацию username с учётом стиля."""
+    """Запрашивает у модели генерацию username с учётом стиля и проверяет их уникальность."""
 
-    # ✅ Принудительно приводим n к int, если вдруг пришла строка
     try:
         n = int(n)
     except ValueError:
         logging.error(f"❌ Ошибка: n должно быть числом, но пришло {type(n)} ({n})")
-        n = config.AVAILABLE_USERNAME_COUNT  # Используем значение по умолчанию
+        n = config.AVAILABLE_USERNAME_COUNT
 
-    available_usernames = set()  # Используем set, чтобы избежать дубликатов
-    checked_usernames = set()  # Добавляем объявление переменной!
+    start_time = time.time()
     attempts = 0
-    empty_responses = 0  # Добавляем счётчик пустых ответов
+    available_usernames = set()
+    checked_usernames = set()
+    total_checked = 0
+    total_free = 0
+    empty_responses = 0
 
     while len(available_usernames) < n and attempts < config.GEN_ATTEMPTS:
         attempts += 1
         logging.info(f"🔄 Попытка {attempts}/{config.GEN_ATTEMPTS}")
 
-        # Генерация username и category
         try:
-            usernames, category = await generate_usernames(context, style or "", n)  # ✅ Исправлено, чтобы `None` → `""`
+            usernames, category = await generate_usernames(context, style or "", n)
         except Exception as e:
             logging.error(f"❌ Ошибка генерации username через OpenAI: {e}")
-            return []  # Ошибка в API AI - прерываем генерацию
+            return []
 
         if not usernames:
             empty_responses += 1
@@ -111,52 +115,49 @@ async def get_available_usernames(bot: Bot, context: str, style: str | None, n: 
                 logging.error("❌ AI отказывается генерировать username. Останавливаем процесс.")
                 break
 
-            continue  # Попытка генерации нового списка
+            continue
 
-        # 🚨 ПРОВЕРЯЕМ, ОТКАЗАЛСЯ ЛИ AI СРАЗУ!
         response_text = " ".join(usernames).lower()
+        logging.info(f"🔍 AI сгенерировал: {usernames}")
+
         if any(phrase in response_text for phrase in ["не могу", "противоречит", "извините", "это запрещено", "не допускается"]):
-            logging.warning("❌ AI сразу отказался генерировать. Прерываем генерацию!")
-            break  # 🚨 ВЫХОДИМ ИЗ ЦИКЛА, ЧТОБЫ НЕ ПЫТАТЬСЯ ЗАНОВО
+            logging.warning("❌ AI отказался генерировать. Прерываем генерацию!")
+            break
 
+        valid_usernames = [u for u in usernames if u not in checked_usernames and is_valid_username(u)]
+        checked_usernames.update(valid_usernames)
 
-        for username in usernames:
-            if username in checked_usernames:
-                continue  # Пропускаем уже проверенные
+        if not valid_usernames:
+            continue
 
-            checked_usernames.add(username)
+        try:
+            check_results = await check_multiple_usernames(valid_usernames)
+        except Exception as e:
+            logging.error(f"❌ Ошибка при проверке username: {e}")
+            continue
 
-            # ✅ ДОБАВЛЯЕМ ПРОВЕРКУ НА ВАЛИДНОСТЬ username
-            if not is_valid_username(username):
-                continue  # Пропускаем невалидные username
-
-            try:
-                result = await check_username_availability(username)
-
-                # 🛑 Если поймали `FLOOD_CONTROL`, сразу возвращаем его, чтобы бот остановился
-                if result.startswith("FLOOD_CONTROL"):
-                    logging.error(f"🚫 Flood Control! Остановка с сообщением: {result}")
-                    return result
-
-            except Exception as e:
-                logging.error(f"❌ Ошибка при проверке {username}: {e}")
-                continue  # Ошибка на сервере Fragment или бота - просто пропускаем
-
-            logging.debug(f"🔍 Проверка username '{username}': {result}")
-
-            if result == "Свободно":
+        tasks = []
+        for username, result in check_results.items():
+            total_checked += 1
+            if result == "Свободно" and len(available_usernames) < n:  # ✅ Проверка лимита!
+                total_free += 1
                 available_usernames.add(username)
 
-            await save_username_to_db(username=username, status=result, category=category, context=context, style=style, llm=config.MODEL)
+            tasks.append(
+                save_username_to_db(username=username, status=result, category=category, context=context, style=style, llm=config.MODEL)
+            )
 
-            if len(available_usernames) >= n:
-                break  # Выходим из цикла, если набрали нужное количество
+        if tasks:
+            try:
+                await asyncio.gather(*tasks)
+            except Exception as e:
+                logging.error(f"❌ Ошибка при записи в БД: {e}")
 
-        # Если все имена уже проверены и не хватает доступных, генерируем новый список
-        if len(available_usernames) < n:
-            logging.info("🔄 Генерация новых имен, так как не хватает доступных.")
+        if len(available_usernames) >= n:
+            break
 
-    if not available_usernames:
-        logging.warning("⚠️ Не найдено доступных username.")
+    duration = time.time() - start_time
+    logging.info(f"📊 Итог генерации: {attempts} попыток, {total_checked} проверено, {total_free} свободных, {len(available_usernames)} выдано. ⏳ {duration:.2f} сек.")
 
-    return list(available_usernames)
+    # ✅ Ограничиваем результат до n username
+    return list(available_usernames)[:n]

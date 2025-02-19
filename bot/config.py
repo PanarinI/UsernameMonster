@@ -49,7 +49,7 @@ MAX_CONTEXT_LENGTH = 200
 AVAILABLE_USERNAME_COUNT = 3
 
 # Количество username, запрашиваемых у OpenAI за один раз
-GENERATED_USERNAME_COUNT = 5
+GENERATED_USERNAME_COUNT = int(os.getenv("GENERATED_USERNAME_COUNT"))
 
 # Максимальное количество итераций (попыток) генерации username
 GEN_ATTEMPTS = int(os.getenv("GEN_ATTEMPTS"))
