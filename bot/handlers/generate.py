@@ -89,27 +89,34 @@ async def process_style_choice(query: types.CallbackQuery, state: FSMContext, bo
     """
     selected_option = query.data
 
+    if selected_option == "back_to_main_style_menu":
+        await query.message.edit_text(
+            "🎭 Как будем искать имя?",
+            reply_markup=initial_styles_kb()  # Возвращаемся на 1 уровень меню
+        )
+        await query.answer()
+        return
+
     if selected_option == "choose_style":
-        # ✅ Если пользователь выбирает "Выбрать стиль", показываем меню стилей
         await query.message.edit_text(
             "🎭 Выбери стиль генерации:",
             reply_markup=styles_kb()
         )
-        return  # ⛔️ Завершаем функцию, чтобы не вызывать генерацию
+        return
 
     elif selected_option == "no_style":
-        # ✅ Если выбран "без стиля", сразу запускаем генерацию
         await state.update_data(start_time=datetime.now().isoformat())
         progress_task = asyncio.create_task(send_progress_messages(query))
         await perform_username_generation(query, state, bot, style=None)
         progress_task.cancel()
         return
 
-    # ✅ Если выбран конкретный стиль, запускаем генерацию с указанным стилем
+    # Обработка выбора конкретного стиля
     await state.update_data(start_time=datetime.now().isoformat())
     progress_task = asyncio.create_task(send_progress_messages(query))
     await perform_username_generation(query, state, bot, style=selected_option)
     progress_task.cancel()
+
 
 
 def contains_cyrillic(text: str) -> bool:
@@ -124,25 +131,24 @@ def escape_md(text: str) -> str:
     return re.sub(r'([_*[\]()~`>#+-=|{}.!])', r'\\\1', text)
 
 
-
 async def send_progress_messages(query: types.CallbackQuery):
     """Фоновая отправка сообщений о процессе генерации."""
     messages = [
-        "Выслеживаю...",
         "Прислушиваюсь к цифровому эфиру...",
-        "...",
+        "⏳...",
     ]
 
-    sent_messages = []
     for msg in messages:
+        await asyncio.sleep(6)  # Задержка перед отправкой следующих сообщений
         try:
-            sent_messages.append(await query.message.answer(msg))
-            await asyncio.sleep(5)  # Задержка перед следующим сообщением
+            logging.info(f"📤 Отправляем сообщение: {msg}")
+            await query.message.answer(msg)
         except Exception as e:
             logging.error(f"❌ Ошибка при отправке сообщения о процессе генерации: {e}")
             break
 
-    return sent_messages
+
+
 
 
 async def perform_username_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
@@ -160,6 +166,9 @@ async def perform_username_generation(query: types.CallbackQuery, state: FSMCont
         return
 
     logging.info(f"🚀 Генерация username: контекст='{context_text}', стиль='{style}'")
+
+    # отправляем сообщение "⏳ Выслеживаю..."
+    await query.message.answer("⏳ Выслеживаю...")
 
     try:
         raw_usernames = await asyncio.wait_for(
@@ -204,7 +213,7 @@ async def handle_generation_result(query: types.CallbackQuery, usernames: list[s
     duration = (datetime.now() - start_dt).total_seconds()
 
     style_rus = config.STYLE_TRANSLATIONS.get(style, style or "")
-    time_prefix = f"[{escape_md(f'{duration:.2f}')} сек] "  # Экранируем время с точкой
+    time_prefix = f"\\[{escape_md(f'{duration:.2f}')} сек\\] "  # Экранируем время с точкой
     text = f"{time_prefix}Вот уникальные имена {'в стиле *' + escape_md(style_rus) + '*' if style else ''} на тему *{escape_md(context)}*:"
 
     await query.message.answer(
