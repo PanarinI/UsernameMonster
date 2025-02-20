@@ -6,6 +6,7 @@ import logging
 import asyncio
 from typing import List
 import re
+from datetime import datetime
 
 from database.database import save_username_to_db
 from services.check import check_multiple_usernames  # Проверка username
@@ -111,6 +112,13 @@ async def gen_process_and_check(bot: Bot, context: str, style: str | None, n: in
     attempts = 0
     empty_responses = 0
 
+    # 📦 Новые метрики
+    total_generated = 0  # Всего сгенерировано username
+    total_free = 0        # Свободные username
+    total_saved = 0       # Добавленные в БД username
+
+    start_time = datetime.now()  # Засекаем время начала генерации
+
     while len(available_usernames) < n and attempts < config.GEN_ATTEMPTS:
         attempts += 1
         logging.info(f"🔄 Попытка {attempts}/{config.GEN_ATTEMPTS}")
@@ -121,11 +129,12 @@ async def gen_process_and_check(bot: Bot, context: str, style: str | None, n: in
             logging.error(f"❌ Ошибка генерации username через OpenAI: {e}")
             return []
 
+        # Проверка на этический отказ
         if is_rejection_response(usernames):
             logging.warning("❌ AI вернул текст отказа по этическим соображениям.")
-            # ✅ Немедленно возвращаем пустой результат, чтобы остановить дальнейшие попытки
             return []
 
+        # Если AI не вернул username
         if not usernames:
             empty_responses += 1
             logging.warning(f"⚠️ AI не дал username ({empty_responses}/{config.MAX_EMPTY_RESPONSES})")
@@ -135,6 +144,8 @@ async def gen_process_and_check(bot: Bot, context: str, style: str | None, n: in
                 break
 
             continue
+
+        total_generated += len(usernames)  # 📦 Учитываем общее количество сгенерированных username
 
         valid_usernames = [u for u in usernames if u not in checked_usernames and is_valid_username(u)]
         checked_usernames.update(valid_usernames)
@@ -152,6 +163,7 @@ async def gen_process_and_check(bot: Bot, context: str, style: str | None, n: in
         for username, result in check_results.items():
             if result == "Свободно" and len(available_usernames) < n:
                 available_usernames.add(username)
+                total_free += 1  # ✅ Учитываем количество свободных username
 
             tasks.append(
                 save_username_to_db(username=username, status=result, category=category, context=context, style=style, llm=config.MODEL)
@@ -160,8 +172,23 @@ async def gen_process_and_check(bot: Bot, context: str, style: str | None, n: in
         if tasks:
             try:
                 await asyncio.gather(*tasks)
+                total_saved += len(tasks)  # 🗄️ Учитываем количество добавленных в БД
             except Exception as e:
                 logging.error(f"❌ Ошибка при записи в БД: {e}")
 
-    logging.info(f"✅ Итоговые доступные username: {available_usernames}")
+        if len(available_usernames) >= n:
+            break
+
+    duration = (datetime.now() - start_time).total_seconds()  # ⏱️ Общее время генерации
+
+    # 📊 Итоговый лог
+    logging.info(
+        f"📊 Итог генерации: {attempts} попыток, "
+        f"{total_generated} сгенерировано, "
+        f"{total_free} свободных, "
+        f"{total_saved} добавлено в БД, "
+        f"{len(available_usernames)} отправлено пользователю. "
+        f"⏱️ {duration:.2f} сек."
+    )
+
     return list(available_usernames)
