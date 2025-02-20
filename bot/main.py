@@ -3,7 +3,8 @@ import asyncio
 import sys
 import os
 import logging
-import config
+import json
+
 from aiohttp import web
 from setup import bot, dp
 from aiogram.types import Update
@@ -15,6 +16,8 @@ from handlers.help import help_router
 from handlers.group import group_router
 from database.database import init_db
 from logger import setup_logging
+
+import config
 
 # ✅ Настраиваем логирование
 setup_logging()
@@ -33,10 +36,8 @@ WEBHOOK_URL = f"{WEBHOOK_HOST}{WEBHOOK_PATH}".replace("http://", "https://")
 WEBAPP_HOST = "0.0.0.0"
 WEBAPP_PORT = int(os.getenv("WEBHOOK_PORT", 80))
 
-
 async def on_startup():
     """Запуск бота"""
-    logging.info(f"🔗 Устанавливаем вебхук: {WEBHOOK_URL}")
     await init_db()
 
     # Подключаем обработчики команд
@@ -48,36 +49,17 @@ async def on_startup():
     dp.include_router(group_router)
 
     if IS_LOCAL:
-        await bot.delete_webhook()
-        logging.info("🛑 Webhook отключён! Бот работает через Polling.")
+        logging.info("🛑 Локальный запуск. Webhook НЕ будет установлен.")
+        await bot.delete_webhook(drop_pending_updates=True)  # Очистим старые апдейты
     else:
+        logging.info(f"🔗 Устанавливаем вебхук: {WEBHOOK_URL}")
         try:
-            await bot.delete_webhook()
-            logging.info(f"🔍 Webhook Host: {WEBHOOK_HOST}")
-            logging.info(f"🔍 Webhook Path: {WEBHOOK_PATH}")
-            logging.info(f"📌 Webhook URL перед установкой: {WEBHOOK_URL}")
-
-            if not WEBHOOK_URL.startswith("https://"):
-                logging.error("❌ Ошибка: Webhook URL должен начинаться с HTTPS!")
-
-            retries = 5
-            for attempt in range(retries):
-                try:
-                    await bot.set_webhook(WEBHOOK_URL)
-                    logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
-                    break  # Выход из цикла, если установка прошла успешно
-                except Exception as e:
-                    logging.error(f"❌ Ошибка при установке Webhook на попытке #{attempt + 1}: {e}")
-                    if attempt < retries - 1:  # Если не последняя попытка
-                        wait_time = 2 ** attempt  # Экспоненциальная задержка
-                        logging.info(f"⏳ Повторная попытка через {wait_time} секунд...")
-                        await asyncio.sleep(wait_time)
-                    else:
-                        logging.error("❌ Превышено количество попыток установки Webhook. Бот не может продолжить.")
-                        sys.exit(1)  # Прерываем запуск после максимального числа попыток
+            await bot.delete_webhook(drop_pending_updates=True)  # Очистим старые апдейты перед установкой вебхука
+            await bot.set_webhook(WEBHOOK_URL)
+            logging.info(f"✅ Webhook установлен: {WEBHOOK_URL}")
         except Exception as e:
             logging.error(f"❌ Ошибка при установке Webhook: {e}")
-            sys.exit(1)  # Прерываем запуск
+            sys.exit(1)
 
 
 async def on_shutdown(_):
@@ -90,7 +72,7 @@ async def on_shutdown(_):
     logging.info("✅ Сессия закрыта.")
 
 
-import json
+
 
 async def handle_update(request):
     """Обработчик Webhook (принимает входящие запросы от Telegram)"""
@@ -98,37 +80,21 @@ async def handle_update(request):
     raw_text = await request.text()
 
     try:
-        update_data = json.loads(raw_text)  # ✅ Разбираем JSON
-        update_id = update_data.get("update_id", "неизвестно")
+        update_data = json.loads(raw_text)
         current_time = int(time.time())
 
-        # Проверяем, нет ли устаревших событий
+        # Фильтруем старые апдейты (старше 15 секунд)
         if "message" in update_data:
             message_time = update_data["message"]["date"]
-            if current_time - message_time > 15:  # Больше 15 секунд? Игнорируем!
+            if current_time - message_time > 15:
                 logging.warning(f"⚠️ Старая команда ({message_time}), игнорируем.")
                 return web.Response(status=200)
 
         if "callback_query" in update_data:
-            callback = update_data["callback_query"]
-            callback_time = callback.get("date", current_time)
-
+            callback_time = update_data["callback_query"].get("date", current_time)
             if current_time - callback_time > 15:
                 logging.warning(f"⚠️ Старая callback-команда ({callback_time}), игнорируем.")
                 return web.Response(status=200)
-
-            # ✅ Фикс: теперь `user` определён всегда
-            user = callback.get("from", {})
-            message = callback.get("message", {})
-            button_data = callback.get("data", "Нет данных")
-
-            log_text = (
-                f"📩 Update ID: {update_id}\n"
-                f"👤 Пользователь: {user.get('first_name', 'Неизвестный')} (@{user.get('username', 'Нет юзернейма')})\n"
-                f"💬 Сообщение от бота: {message.get('text', 'Без текста')}\n"
-                f"🔘 Нажата кнопка: {button_data}"
-            )
-            logging.info(log_text)
 
         update = Update(**update_data)
         await dp.feed_update(bot=bot, update=update)
@@ -145,6 +111,7 @@ async def handle_update(request):
         return web.Response(status=500)
 
 
+
 async def handle_root(request):
     """Обработчик корневого запроса (проверка работы)"""
     logging.info("✅ Обработан GET-запрос на /")
@@ -158,9 +125,9 @@ async def main():
     if IS_LOCAL:
         logging.info("🚀 Запускаем бота в режиме Polling...")
         await dp.start_polling(bot)
-        sys.exit(0)  # <-- Прерываем выполнение, чтобы Webhook НЕ запускался!
+        sys.exit(0)  # Прерываем выполнение, чтобы Webhook НЕ запускался!
 
-    # 🌐 Если режим Webhook
+    # 🌐 Если режим Webhook (сервер)
     logging.info("⚡ БОТ ПЕРЕЗАПУЩЕН (контейнер стартовал заново)")
     app = web.Application()
     app.add_routes([
@@ -169,6 +136,7 @@ async def main():
     ])
     app.on_shutdown.append(on_shutdown)
     return app
+
 
 async def start_server():
     """Запуск сервера или Polling"""

@@ -90,10 +90,7 @@ async def process_style_choice(query: types.CallbackQuery, state: FSMContext, bo
     selected_option = query.data
 
     if selected_option == "back_to_main_style_menu":
-        await query.message.edit_text(
-            "🎭 Как будем искать имя?",
-            reply_markup=initial_styles_kb()  # Возвращаемся на 1 уровень меню
-        )
+        await query.message.edit_reply_markup(reply_markup=initial_styles_kb())  # Меняем только клавиатуру
         await query.answer()
         return
 

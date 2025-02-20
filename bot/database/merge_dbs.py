@@ -4,19 +4,21 @@ import psycopg2
 local_conn = psycopg2.connect(
     dbname="NameHunt",
     user="postgres",
-    password="Pdjyjr2&",
+    password="Pdjyjr2",
     host="localhost",  # Или IP-адрес локального хоста
     port=5432
 )
-
+print("Подключение к локальной базе данных успешно!")
 # Подключаемся к облачной базе данных на Amvera
 cloud_conn = psycopg2.connect(
     dbname="namehunt_db",
     user="PanarinI",
-    password="Pdjyjr22&",
+    password="Pdjyjr2",
     host="namehuntdb-panarini.db-msk0.amvera.tech",  # Хост базы на Amvera
     port=5432
 )
+
+print("Подключение к облачной базе данных успешно!")
 
 # Создаём курсоры для выполнения запросов
 local_cursor = local_conn.cursor()
@@ -39,7 +41,7 @@ try:
     cloud_cursor.execute(f"SELECT setval('generated_usernames_id_seq', {new_start_id}, false)")
 
     # Переносим данные из локальной базы в облачную
-    local_cursor.execute("SELECT id, username, status, category, context, llm FROM public.generated_usernames")
+    local_cursor.execute("SELECT id, username, status, category, context, style, llm FROM public.generated_usernames")
     data_to_insert = local_cursor.fetchall()
 
     for row in data_to_insert:
@@ -49,7 +51,7 @@ try:
 
         # Вставляем запись в облачную базу, если id уникален (по id уже проверено, мы продолжим с нового)
         cloud_cursor.execute(
-            "INSERT INTO public.generated_usernames (id, username, status, category, context, llm, style) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO public.generated_usernames (id, username, status, category, context, style, llm) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             row
         )
 
@@ -62,7 +64,7 @@ try:
 
         # Вставляем запись с новым username, если она не существует в облачной базе
         cloud_cursor.execute(
-            "INSERT INTO public.generated_usernames (id, username, status, category, context, llm, style) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO public.generated_usernames (id, username, status, category, context, style, llm) VALUES (%s, %s, %s, %s, %s, %s, %s)",
             row
         )
 
