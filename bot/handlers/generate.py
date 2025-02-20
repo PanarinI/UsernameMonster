@@ -145,11 +145,7 @@ async def send_progress_messages(query: types.CallbackQuery):
     return sent_messages
 
 
-
 async def perform_username_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
-    """
-    Запуск генерации username и обработка результата.
-    """
     data = await state.get_data()
     context_text = data.get("context", "")
     start_time = data.get("start_time", "")
@@ -172,17 +168,14 @@ async def perform_username_generation(query: types.CallbackQuery, state: FSMCont
         )
         usernames = [u.strip() for u in raw_usernames if u.strip()]
 
-        if is_rejection_response(usernames):
-            logging.warning(f"❌ AI отказался генерировать username (контекст: '{context_text}', стиль: '{style}').")
+        if not usernames:
+            logging.warning(f"❌ AI отказался генерировать username по этическим соображениям (контекст: '{context_text}', стиль: '{style}').")
             await query.message.answer(
                 "❌ AI отказался генерировать имена по этическим соображениям. Попробуйте изменить запрос.",
                 reply_markup=error_retry_kb()
             )
             await state.clear()
             return
-
-        if not usernames:
-            raise ValueError("Генерация вернула пустой результат.")
 
         await handle_generation_result(query, usernames, context_text, style, start_time)
         await state.clear()
@@ -193,25 +186,6 @@ async def perform_username_generation(query: types.CallbackQuery, state: FSMCont
         await state.clear()
 
 
-REJECTION_PATTERNS = [
-    r"не могу",
-    r"противоречит",
-    r"извините",
-    r"это запрещено",
-    r"не допускается"
-]
-
-def is_rejection_response(usernames: List[str]) -> bool:
-    """
-    Проверяет, содержит ли список username текстовый отказ от AI.
-    """
-    for username in usernames:
-        # Проверяем, есть ли кириллица (признак текста, а не username)
-        if re.search(r'[а-яА-Я]', username):
-            # Проверяем на наличие шаблонов отказа
-            if any(re.search(pattern, username.lower()) for pattern in REJECTION_PATTERNS):
-                return True
-    return False
 
 
 async def handle_generation_result(query: types.CallbackQuery, usernames: list[str], context: str, style: str | None,

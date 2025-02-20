@@ -3,7 +3,7 @@ from openai import OpenAI
 from dotenv import load_dotenv
 import os
 import logging
-from utils.logger import setup_logging
+
 import config
 from services.check import check_username_availability  # Проверка username
 from handlers.check import is_valid_username  # Валидация username
