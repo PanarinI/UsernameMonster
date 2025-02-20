@@ -1,20 +1,18 @@
-import os
-import time
-import logging
-from dotenv import load_dotenv
-import asyncio
 from aiogram import Bot
 from openai import OpenAI
+from dotenv import load_dotenv
+import os
+import logging
+import asyncio
 
+from database.database import save_username_to_db
+import config
 from services.check import check_multiple_usernames  # Проверка username
 from handlers.check import is_valid_username  # Валидация username
-from database.database import save_username_to_db
-
-import config
-
 
 # Загрузка переменных окружения и настройка логирования
 load_dotenv()
+
 
 # Получение ключей API из окружения
 API_KEY = os.getenv("API_KEY")
@@ -23,13 +21,14 @@ BASE_URL = os.getenv("BASE_URL")
 # Создание клиента OpenAI для генерации username
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-async def generate_usernames(context: str, style: str | None, n: int) -> tuple[list[str], str]:
+async def generate_username_list(context: str, style: str | None, n: int = config.GENERATED_USERNAME_COUNT) -> tuple[list[str], str]:
     """
-    Генерирует `n` username в указанном стиле (или без стиля) и определяет категорию.
+    Генерирует `n` username на основе контекста и стиля (если стиль указан).
+    Возвращает список валидных username и категорию.
     """
-    logging.info(f"📝 Генерация username: context='{context}', style='{style}', n={n}")
+    logging.info(f"🔄 Генерация username: context='{context}', style='{style}', n={n}")
 
-    # ✅ Выбираем нужный промпт
+    # Выбор нужного промпта в зависимости от наличия стиля
     if style:
         prompt = config.PROMPT_WITH_STYLE.format(n=n, context=context, style=style)
         prompt_type = "WITH STYLE"
@@ -37,7 +36,7 @@ async def generate_usernames(context: str, style: str | None, n: int) -> tuple[l
         prompt = config.PROMPT_NO_STYLE.format(n=n, context=context)
         prompt_type = "NO STYLE"
 
-
+    # Запрос к AI API
     response = client.chat.completions.create(
         model=config.MODEL,
         messages=[{"role": "user", "content": prompt}],
@@ -45,64 +44,51 @@ async def generate_usernames(context: str, style: str | None, n: int) -> tuple[l
         temperature=config.TEMPERATURE,
     )
 
-    # ✅ Чистый лог запроса без текста промпта
-    logging.debug(
-        f"📡 Запрос к API: "
-        f"model={config.MODEL}, "
-        f"max_tokens={config.MAX_TOKENS}, "
-        f"temperature={config.TEMPERATURE}, "
-        f"prompt_type={prompt_type}"
-    )
+    logging.debug(f"API Response: {response}")
 
-    # ✅ Разбираем ответ модели
+    # Если API вернул данные, извлекаем username
     if response.choices and response.choices[0].message and response.choices[0].message.content:
         response_text = response.choices[0].message.content.strip()
         lines = [line.strip() for line in response_text.split("\n") if line.strip()]
 
-        if len(lines) < 2:  # Если OpenAI не вернул категорию
+        if len(lines) < 2:
             logging.warning("⚠️ API не вернул категорию, берем 'Неизвестно'")
             category = "Неизвестно"
-            usernames_raw = lines[0] if lines else ""  # Если OpenAI вообще ничего не вернул
+            usernames_raw = lines[0] if lines else ""
         else:
-            # ✅ Убираем "Категория:" из первой строки
             category = lines[0].replace("Категория:", "").strip()
-            usernames_raw = lines[1]  # Вторая строка — список username
+            usernames_raw = lines[1]
 
         usernames = [u.strip() for u in usernames_raw.split(",")]
 
-        logging.info(f"✅ Итоговая категория: {category}")
-        logging.info(f"✅ Итоговые username: {usernames}")
+        # ✅ Фильтрация только валидных username
+        valid_usernames = [username for username in usernames if is_valid_username(username)]
+        logging.info(f"✅ категория: {category}, сгенерировано username: {len(valid_usernames)}")
 
-        return usernames, category
+        return valid_usernames, category
 
     else:
         logging.warning("⚠️ API не вернул корректные данные.")
         return [], "Неизвестно"
 
 
-async def get_available_usernames(bot: Bot, context: str, style: str | None, n: int):
-    """Запрашивает у модели генерацию username с учётом стиля и проверяет их уникальность."""
+async def gen_process_and_check(bot: Bot, context: str, style: str | None, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str]:
+    """
+    Возвращает `n` доступных username, избегая повторных проверок.
+    """
+    logging.info(f"🔎 Поиск {n} доступных username для контекста: '{context}' со стилем: '{style}'")
 
-    try:
-        n = int(n)
-    except ValueError:
-        logging.error(f"❌ Ошибка: n должно быть числом, но пришло {type(n)} ({n})")
-        n = config.AVAILABLE_USERNAME_COUNT
-
-    start_time = time.time()
-    attempts = 0
     available_usernames = set()
-    checked_usernames = set()
-    total_checked = 0
-    total_free = 0
-    empty_responses = 0
+    checked_usernames = set()  # Список уже проверенных username
+    attempts = 0  # Количество попыток генерации
+    empty_responses = 0  # Количество пустых ответов AI
 
     while len(available_usernames) < n and attempts < config.GEN_ATTEMPTS:
         attempts += 1
         logging.info(f"🔄 Попытка {attempts}/{config.GEN_ATTEMPTS}")
 
         try:
-            usernames, category = await generate_usernames(context, style or "", n)
+            usernames, category = await generate_username_list(context, style or "", n=config.GENERATED_USERNAME_COUNT)
         except Exception as e:
             logging.error(f"❌ Ошибка генерации username через OpenAI: {e}")
             return []
@@ -117,12 +103,6 @@ async def get_available_usernames(bot: Bot, context: str, style: str | None, n: 
 
             continue
 
-        response_text = " ".join(usernames).lower()
-        logging.info(f"🔍 AI сгенерировал: {usernames}")
-
-        if any(phrase in response_text for phrase in ["не могу", "противоречит", "извините", "это запрещено", "не допускается"]):
-            logging.warning("❌ AI отказался генерировать. Прерываем генерацию!")
-            break
 
         valid_usernames = [u for u in usernames if u not in checked_usernames and is_valid_username(u)]
         checked_usernames.update(valid_usernames)
@@ -138,26 +118,21 @@ async def get_available_usernames(bot: Bot, context: str, style: str | None, n: 
 
         tasks = []
         for username, result in check_results.items():
-            total_checked += 1
-            if result == "Свободно" and len(available_usernames) < n:  # ✅ Проверка лимита!
-                total_free += 1
+            if result == "Свободно" and len(available_usernames) < n:
                 available_usernames.add(username)
 
+            # Добавление задачи для записи в БД
             tasks.append(
                 save_username_to_db(username=username, status=result, category=category, context=context, style=style, llm=config.MODEL)
             )
 
+        # Асинхронная запись в БД
         if tasks:
             try:
                 await asyncio.gather(*tasks)
             except Exception as e:
                 logging.error(f"❌ Ошибка при записи в БД: {e}")
 
-        if len(available_usernames) >= n:
-            break
+    logging.info(f"✅ Итоговые доступные username: {available_usernames}")
+    return list(available_usernames)
 
-    duration = time.time() - start_time
-    logging.info(f"📊 Итог генерации: {attempts} попыток, {total_checked} проверено, {total_free} свободных, {len(available_usernames)} выдано. ⏳ {duration:.2f} сек.")
-
-    # ✅ Ограничиваем результат до n username
-    return list(available_usernames)[:n]

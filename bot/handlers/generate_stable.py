@@ -1,17 +1,13 @@
 import logging
 import asyncio
 import re
-from datetime import datetime
-from typing import List
 from aiogram import Bot, Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
-
 from services.generate import gen_process_and_check
 from keyboards.generate import generate_username_kb, error_retry_kb, styles_kb, initial_styles_kb
 from keyboards.main_menu import main_menu_kb, back_to_main_kb
 from .states import GenerateUsernameStates
-
 import config
 
 
@@ -28,7 +24,10 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
 
     await state.clear()  # Очищаем состояние перед новой командой
     await asyncio.sleep(0.05)  # ✅ Даем FSM время сброситься
+
+    # Сохраняем время начала генерации в FSM
     await state.update_data(start_time=datetime.now().isoformat())
+
     await query.message.answer(
         "🔮 О чём должно говорить имя? Опиши тему, и я поймаю три уникальных имени.\n"
         "📖 <i>Например: «загадки истории», «фиолетовые котики», да что угодно</i>",
@@ -40,6 +39,7 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
     await query.answer()  # Telegram требует подтверждения, что callback обработан.
 
 
+### ✅ 2. ОБРАБОТЧИК КОМАНДЫ /generate
 @generate_router.message(Command("generate"))  # Фильтр чтобы /generate срабатывал независимо от состояния
 async def cmd_generate_slash(message: types.Message, state: FSMContext):
     """
@@ -54,6 +54,7 @@ async def cmd_generate_slash(message: types.Message, state: FSMContext):
     await state.set_state(GenerateUsernameStates.waiting_for_context)
 
 
+### ✅ 3. ОБРАБОТЧИК ВВОДА КОНТЕКСТА
 @generate_router.message(GenerateUsernameStates.waiting_for_context)
 async def process_context_input(message: types.Message, state: FSMContext):
     """
@@ -89,27 +90,21 @@ async def process_style_choice(query: types.CallbackQuery, state: FSMContext, bo
     """
     selected_option = query.data
 
-    if selected_option == "choose_style":
-        # ✅ Если пользователь выбирает "Выбрать стиль", показываем меню стилей
+    if selected_option in ["no_style", "choose_style"]:
         await query.message.edit_text(
-            "🎭 Выбери стиль генерации:",
-            reply_markup=styles_kb()
+            "🎭 Выбери стиль генерации:" if selected_option == "choose_style" else "⏳ Генерация имени...",
+            reply_markup=styles_kb() if selected_option == "choose_style" else None
         )
-        return  # ⛔️ Завершаем функцию, чтобы не вызывать генерацию
 
-    elif selected_option == "no_style":
-        # ✅ Если выбран "без стиля", сразу запускаем генерацию
-        await state.update_data(start_time=datetime.now().isoformat())
-        progress_task = asyncio.create_task(send_progress_messages(query))
-        await perform_username_generation(query, state, bot, style=None)
-        progress_task.cancel()
+        if selected_option == "no_style":
+            # Сохраняем время начала генерации в FSM
+            await state.update_data(start_time=datetime.now().isoformat())
+            await perform_username_generation(query, state, bot, style=None)
         return
 
-    # ✅ Если выбран конкретный стиль, запускаем генерацию с указанным стилем
+    # Сохраняем время начала генерации перед выбором стиля
     await state.update_data(start_time=datetime.now().isoformat())
-    progress_task = asyncio.create_task(send_progress_messages(query))
     await perform_username_generation(query, state, bot, style=selected_option)
-    progress_task.cancel()
 
 
 def contains_cyrillic(text: str) -> bool:
@@ -123,119 +118,123 @@ def escape_md(text: str) -> str:
         return ""
     return re.sub(r'([_*[\]()~`>#+-=|{}.!])', r'\\\1', text)
 
-
-
 async def send_progress_messages(query: types.CallbackQuery):
     """Фоновая отправка сообщений о процессе генерации."""
     messages = [
         "Выслеживаю...",
         "Прислушиваюсь к цифровому эфиру...",
-        "...",
     ]
 
     sent_messages = []
     for msg in messages:
-        try:
-            sent_messages.append(await query.message.answer(msg))
-            await asyncio.sleep(5)  # Задержка перед следующим сообщением
-        except Exception as e:
-            logging.error(f"❌ Ошибка при отправке сообщения о процессе генерации: {e}")
-            break
+        sent_messages.append(await query.message.answer(msg))
+        await asyncio.sleep(3)  # Задержка перед следующим сообщением
 
-    return sent_messages
+    return sent_messages  # Список отправленных сообщений
 
-
-
-async def perform_username_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
+async def start_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
     """
-    Запуск генерации username и обработка результата.
+    Общая функция генерации username (вызывается и при выборе стиля, и без).
     """
     data = await state.get_data()
     context_text = data.get("context", "")
-    start_time = data.get("start_time", "")
-
-    if not start_time:
-        logging.warning("⚠️ Внимание! start_time не найден в FSM. Установим текущее время.")
-        start_time = datetime.now().isoformat()
 
     if not context_text:
-        await query.message.answer("❌ Ошибка: не удалось получить тему генерации. Начните заново.", reply_markup=main_menu_kb())
+        logging.error("⚠️ Ошибка: Контекст не найден в состоянии!")
+        await query.message.answer(
+            "❌ Ошибка: не удалось получить тему генерации. Начните заново.",
+            reply_markup=main_menu_kb()
+        )
         await state.clear()
         return
 
-    logging.info(f"🚀 Генерация username: контекст='{context_text}', стиль='{style}'")
+    logging.info(f"🚀 Запуск генерации username по контексту '{context_text}' и стилю '{style}'")
+
+    # ✅ Отправляем сообщение о начале генерации
+    try:
+        # 🔄 Отправляем анимированное эмодзи ⏳ (если у пользователя Telegram Premium, оно будет анимированным)
+        await query.message.answer("⏳")
+        await asyncio.sleep(2)  # Делаем небольшую паузу перед следующим сообщением
+
+        # 📩 Теперь отправляем основное сообщение
+        waiting_message = await query.message.answer("Выслеживаю... ")
+        await asyncio.sleep(3)  # Делаем небольшую паузу перед следующим сообщением
+        waiting_message = await query.message.answer("Прислушиваюсь к цифровому эфиру...")
+
+        logging.info("✅ Сообщение о начале генерации отправлено")
+    except Exception as e:
+        logging.error(f"❌ Ошибка при отправке сообщения о генерации: {e}")
+        return
+
+    # Запускаем отправку сообщений в фоновом режиме
+    progress_task = asyncio.create_task(send_progress_messages(query))
+
+    # ✅ Вызываем генерацию
+    logging.info("🔄 Вызываем gen_process_and_check()...")
 
     try:
         raw_usernames = await asyncio.wait_for(
             gen_process_and_check(bot, context_text, style, config.AVAILABLE_USERNAME_COUNT),
             timeout=config.GEN_TIMEOUT
         )
-        usernames = [u.strip() for u in raw_usernames if u.strip()]
 
-        if is_rejection_response(usernames):
+        # Отменяем процесс, если генерация завершилась раньше
+        progress_task.cancel()
+
+        logging.info(f"✅ Ответ AI до обработки: {raw_usernames}")
+
+        # 🚨 Проверяем отказ AI (до очистки)
+        usernames_cleaned = [u.strip() for u in raw_usernames if u.strip()]  # Убираем пустые строки
+        response_text = " ".join(usernames_cleaned).lower()
+
+        # 🚨 Проверяем, что ВЕСЬ СПИСОК username состоит из отказов
+        if all(any(phrase in username.lower() for phrase in ["не могу", "противоречит", "извините", "это запрещено", "не допускается"]) for username in usernames_cleaned):
             logging.warning(f"❌ AI отказался генерировать username (контекст: '{context_text}', стиль: '{style}').")
             await query.message.answer(
                 "❌ AI отказался генерировать имена по этическим соображениям. Попробуйте изменить запрос.",
                 reply_markup=error_retry_kb()
             )
-            await state.clear()
-            return
+            await state.clear()  # ⛔ Чистим состояние, чтобы не было зацикливания
+            return  # ⛔ Выходим
 
-        if not usernames:
-            raise ValueError("Генерация вернула пустой результат.")
 
-        await handle_generation_result(query, usernames, context_text, style, start_time)
+        # ✅ Теперь очищаем список от мусора (пустые строки, пробелы)
+        usernames = [u.strip() for u in raw_usernames if u.strip()]
+
+        logging.info(f"✅ список корректно обработан")
+
+    except asyncio.TimeoutError:
+        logging.error(f"❌ Ошибка: Время ожидания генерации username истекло (контекст: '{context_text}', стиль: '{style}').")
+        await query.message.answer("⏳ Имялов искал имена слишком долго. Попробуйте позже.", reply_markup=main_menu_kb())
         await state.clear()
+        return
 
-    except Exception as e:
-        logging.error(f"❌ Ошибка генерации: {e}")
-        await query.message.answer("❌ Ошибка при генерации. Попробуйте ещё раз.", reply_markup=error_retry_kb())
-        await state.clear()
+    logging.info(f"📜 Полученный список usernames: {usernames}")
 
-
-REJECTION_PATTERNS = [
-    r"не могу",
-    r"противоречит",
-    r"извините",
-    r"это запрещено",
-    r"не допускается"
-]
-
-def is_rejection_response(usernames: List[str]) -> bool:
-    """
-    Проверяет, содержит ли список username текстовый отказ от AI.
-    """
-    for username in usernames:
-        # Проверяем, есть ли кириллица (признак текста, а не username)
-        if re.search(r'[а-яА-Я]', username):
-            # Проверяем на наличие шаблонов отказа
-            if any(re.search(pattern, username.lower()) for pattern in REJECTION_PATTERNS):
-                return True
-    return False
+    # Если список username всё равно пустой, показываем другую ошибку
+    if not usernames:
+        logging.warning(f"❌ Генерация username не дала результатов (контекст: '{context_text}', стиль: '{style}').")
+        await query.message.answer(
+            "❌ Не удалось поймать имена. Возможно, тема слишком популярна. Попробуйте чуть изменить запрос или стиль!",
+            reply_markup=error_retry_kb()
+        )
+        return
 
 
-async def handle_generation_result(query: types.CallbackQuery, usernames: list[str], context: str, style: str | None,
-                                   start_time: str):
-    """
-    Отправка результата генерации username пользователю.
-    """
-    # Безопасное преобразование времени генерации
-    try:
-        start_dt = datetime.fromisoformat(start_time)
-    except ValueError:
-        logging.error(f"❌ Ошибка: Некорректный формат start_time: '{start_time}'. Используем текущее время.")
-        start_dt = datetime.now()
+    kb_usernames = generate_username_kb(usernames)
 
-    # Вычисляем время генерации
-    duration = (datetime.now() - start_dt).total_seconds()
-
+    # Преобразуем стиль в русское название
     style_rus = config.STYLE_TRANSLATIONS.get(style, style or "")
-    time_prefix = f"[{escape_md(f'{duration:.2f}')} сек] "  # Экранируем время с точкой
-    text = f"{time_prefix}Вот уникальные имена {'в стиле *' + escape_md(style_rus) + '*' if style else ''} на тему *{escape_md(context)}*:"
+
+    # Формируем текст с экранированными символами
+    text = f"Вот уникальные имена {'в стиле *' + escape_md(style_rus) + '*' if style else ''} на тему *{escape_md(context_text)}*:"
 
     await query.message.answer(
         text,
         parse_mode="MarkdownV2",
-        reply_markup=generate_username_kb(usernames)
+        reply_markup=kb_usernames
     )
-    logging.info("✅ Результаты генерации отправлены пользователю.")
+
+    logging.info("✅ Ответ пользователю отправлен, очищаем состояние")
+    await state.clear()
+

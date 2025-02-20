@@ -1,8 +1,11 @@
 import asyncio
+import logging
+
 import aiohttp
 import ssl
 from bs4 import BeautifulSoup
 from database.database import save_username_to_db  # Импорт здесь, чтобы избежать циклических импортов
+import logging
 
 async def check_multiple_usernames(usernames: list[str], save_to_db: bool = False) -> dict:
     """
@@ -36,14 +39,14 @@ async def check_username_via_fragment(session, username: str) -> str:
     url_username = f"https://fragment.com/username/{username}"
     url_query = f"https://fragment.com/?query={username}"
 
-    print(f"\n[STEP 1] 🔎 Проверяем username: @{username}")
+    logging.info(f"[CHECK] 🔎 Проверяем final=query. if true > свободно @{username}")
 
     try:
         async with session.get(url_username, ssl=ssl_context, allow_redirects=True) as response:
             final_url = str(response.url)
 
             if final_url == url_query:
-                print(f"[INFO] 🔹 @{username} свободно (по редиректу).")
+                logging.info(f"[RESULT]🔹 @{username} свободно.")
                 return "Свободно"
 
             html = await response.text()
@@ -63,14 +66,14 @@ async def analyze_username_page(html: str, username: str) -> str:
         status_text = status_element.text.strip().lower()
 
         if "available" in status_text:
-            print(f"[RESULT] ⚠️ @{username} доступен для покупки.")
+            logging.info(f"[RESULT] ⚠️ @{username} доступен для покупки.")
             return "Доступно для покупки"
         elif "sold" in status_text:
-            print(f"[RESULT] ❌ @{username} продан.")
+            logging.info(f"[RESULT] ❌ @{username} продан.")
             return "Продано"
         elif "taken" in status_text:
-            print(f"[RESULT] ❌ @{username} уже занят.")
+            logging.info(f"[RESULT] ❌ @{username} уже занят.")
             return "Занято"
 
-    print(f"[WARNING] ⚠️ Статус @{username} не определён.")
+    logging.info(f"[WARNING] ⚠️ Статус @{username} не определён.")
     return "Невозможно определить"

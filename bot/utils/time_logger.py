@@ -28,17 +28,16 @@ async def measure_username_generation(
     logging.info(f"⏳ Время отправки сообщения о начале генерации: {send_duration:.2f} сек")
 
     # ✅ Ленивый импорт, чтобы избежать циклического импорта
-    from services.generate import get_available_usernames
+    from services.generate import gen_process_and_check
 
     # 2️⃣ Замер времени генерации username (бизнес-логика)
     gen_start = time.time()
-    usernames = await get_available_usernames(bot, context, style, n)
+    usernames = await gen_process_and_check(bot, context, style, n)
     gen_duration = time.time() - gen_start
     logging.info(f"⏳ Время генерации username: {gen_duration:.2f} сек")
 
     # 3️⃣ Замер времени отправки результата пользователю
     send_start = time.time()
-    await message.answer(f"✅ Сгенерировано {len(usernames)} username: {usernames}")
     send_duration = time.time() - send_start
     logging.info(f"⏳ Время отправки результата в Telegram: {send_duration:.2f} сек")
 

@@ -19,11 +19,11 @@ BASE_URL = os.getenv("BASE_URL")
 # Создание клиента OpenAI для генерации username
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_COUNT) -> list[str]:
+async def generate_username_list(context: str, n: int = config.GENERATED_USERNAME_COUNT) -> list[str]:
     """
     Генерирует `n` username на основе контекста.
     """
-    logging.info(f"📝 Генерация username: context='{context}', n={n}")
+    logging.info(f"🔄 Генерация username: context='{context}', n={n}")
 
     prompt = config.PROMPT.format(n=n, context=context)
 
@@ -50,7 +50,7 @@ async def generate_usernames(context: str, n: int = config.GENERATED_USERNAME_CO
 
     return valid_usernames
 
-async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str]:
+async def gen_process_and_check(bot: Bot, context: str, n: int = config.AVAILABLE_USERNAME_COUNT) -> list[str]:
     """
     Возвращает `n` доступных username, избегая повторных проверок.
     """
@@ -66,7 +66,7 @@ async def get_available_usernames(bot: Bot, context: str, n: int = config.AVAILA
         logging.info(f"🔄 Попытка {attempts}/{config.GEN_ATTEMPTS}")
 
         # Генерация username
-        usernames = await generate_usernames(context, n=config.GENERATED_USERNAME_COUNT)
+        usernames = await generate_username_list(context, n=config.GENERATED_USERNAME_COUNT)
         logging.debug(f"📜 Сгенерированные username: {usernames}")
 
         # Если API не вернул username

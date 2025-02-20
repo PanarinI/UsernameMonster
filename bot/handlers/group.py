@@ -2,7 +2,7 @@ import logging
 import asyncio
 from aiogram import Router, types
 from aiogram.filters import Command
-from services.generate import get_available_usernames  # Генерация никнеймов
+from services.generate import gen_process_and_check  # Генерация никнеймов
 import config
 
 group_router = Router()
@@ -21,7 +21,7 @@ async def send_namehunt(message: types.Message):
     try:
         # 🔄 Вызываем AI для генерации никнеймов (без стиля)
         usernames = await asyncio.wait_for(
-            get_available_usernames(None, context_text, None, config.AVAILABLE_USERNAME_COUNT),
+            gen_process_and_check(None, context_text, None, config.AVAILABLE_USERNAME_COUNT),
             timeout=config.GEN_TIMEOUT
         )
 
