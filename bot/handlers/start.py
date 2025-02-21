@@ -7,7 +7,7 @@ start_router = Router()  # Создаём Router
 @start_router.message(Command("start"))
 async def cmd_start(message: types.Message):
     """Обработчик команды /start"""
-    await message.answer("🔮 Привет, странник. Я Имялов — охотник за редкими @username. Давай поймаем для тебя что-то особенное?", reply_markup=main_menu_kb())
+    await message.answer("🔮 Я Имялов — охотник за редкими @username. Попробуем поймать что-то особенное?", reply_markup=main_menu_kb())
 
 
 

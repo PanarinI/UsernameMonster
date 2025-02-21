@@ -13,7 +13,7 @@ print("Подключение к локальной базе данных усп
 cloud_conn = psycopg2.connect(
     dbname="namehunt_db",
     user="PanarinI",
-    password="Pdjyjr2",
+    password="Pdjyjr22&",
     host="namehuntdb-panarini.db-msk0.amvera.tech",  # Хост базы на Amvera
     port=5432
 )
@@ -30,18 +30,22 @@ try:
 
     # Получаем максимальный id из локальной базы
     local_cursor.execute("SELECT MAX(id) FROM public.generated_usernames")
-    max_id_local = local_cursor.fetchone()[0]
+    max_id_local = local_cursor.fetchone()[0] or 0
+    print(f"Максимальный ID в локальной базе: {max_id_local}")
 
     # Получаем текущий id в облачной базе
     cloud_cursor.execute("SELECT MAX(id) FROM public.generated_usernames")
-    max_id_cloud = cloud_cursor.fetchone()[0]
+    max_id_cloud = cloud_cursor.fetchone()[0] or 0
+    print(f"Максимальный ID в облачной базе: {max_id_cloud}")
 
     # Устанавливаем значение следующего id для облачной базы
     new_start_id = max(max_id_local + 1, max_id_cloud + 1)
-    cloud_cursor.execute(f"SELECT setval('generated_usernames_id_seq', {new_start_id}, false)")
+    print(f"Следующий ID для облачной базы: {new_start_id}")
+
+    cloud_cursor.execute(f"SELECT setval('generated_usernames_new_id_seq', {new_start_id}, false)")
 
     # Переносим данные из локальной базы в облачную
-    local_cursor.execute("SELECT id, username, status, category, context, style, llm FROM public.generated_usernames")
+    local_cursor.execute("SELECT username, status, category, context, style, llm FROM public.generated_usernames")
     data_to_insert = local_cursor.fetchall()
 
     for row in data_to_insert:
@@ -49,28 +53,22 @@ try:
         if row[5] is None:
             row = row[:5] + ("gemini-flash-1.5",)
 
-        # Вставляем запись в облачную базу, если id уникален (по id уже проверено, мы продолжим с нового)
-        cloud_cursor.execute(
-            "INSERT INTO public.generated_usernames (id, username, status, category, context, style, llm) VALUES (%s, %s, %s, %s, %s, %s, %s)",
-            row
-        )
-
-    # Теперь проверяем для username, чтобы не было дублирования
-    for row in data_to_insert:
-        cloud_cursor.execute("SELECT 1 FROM public.generated_usernames WHERE username = %s", (row[1],))
+        # Проверяем наличие username в облачной базе
+        cloud_cursor.execute("SELECT 1 FROM public.generated_usernames WHERE username = %s", (row[0],))
         if cloud_cursor.fetchone():
-            print(f"Пропускаем запись с username={row[1]}, так как она уже существует в облачной базе.")
+            print(f"Пропускаем запись с username={row[0]}, так как она уже существует в облачной базе.")
             continue  # Пропускаем эту запись
 
-        # Вставляем запись с новым username, если она не существует в облачной базе
+        # Вставляем запись без id, чтобы база сама создала уникальный id
         cloud_cursor.execute(
-            "INSERT INTO public.generated_usernames (id, username, status, category, context, style, llm) VALUES (%s, %s, %s, %s, %s, %s, %s)",
+            "INSERT INTO public.generated_usernames (username, status, category, context, style, llm) VALUES (%s, %s, %s, %s, %s, %s)",
             row
         )
 
     # Фиксируем изменения в облачной базе
     cloud_conn.commit()
-    print("Данные успешно перенесены!")
+    print("Все данные успешно перенесены без дубликатов по username!")
+
 
 except Exception as e:
     # В случае ошибки откатываем изменения
