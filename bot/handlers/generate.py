@@ -6,7 +6,7 @@ from typing import List
 from aiogram import Bot, Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
-
+from keyboards.generate import escape_md
 from services.generate import gen_process_and_check
 from keyboards.generate import generate_username_kb, error_retry_kb, styles_kb, initial_styles_kb
 from keyboards.main_menu import main_menu_kb, back_to_main_kb
@@ -30,8 +30,8 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
     await asyncio.sleep(0.05)  # ✅ Даем FSM время сброситься
     await state.update_data(start_time=datetime.now().isoformat())
     await query.message.answer(
-        "🔮 О чём должно говорить имя? НАПИШИ тему, и я поймаю три уникальных имени.\n"
-        "📖 <i>Например: «загадки истории», «фиолетовые котики», да что угодно</i>",
+        "🔭 О чём должно говорить имя? Напиши тему, и я поймаю три уникальных имени.\n"
+        "💫  <i>Например: «загадки истории», «космические котики», или что угодно - пространство имён бесконечно!</i>",
         parse_mode="HTML",
         reply_markup=back_to_main_kb()
     )
@@ -121,12 +121,6 @@ def contains_cyrillic(text: str) -> bool:
     return bool(re.search(r'[а-яА-Я]', text))
 
 
-def escape_md(text: str) -> str:
-    """Экранирует спецсимволы для MarkdownV2"""
-    if not text:
-        return ""
-    return re.sub(r'([_*[\]()~`>#+-=|{}.!])', r'\\\1', text)
-
 
 async def send_progress_messages(query: types.CallbackQuery):
     """Фоновая отправка сообщений о процессе генерации."""
@@ -143,9 +137,6 @@ async def send_progress_messages(query: types.CallbackQuery):
         except Exception as e:
             logging.error(f"❌ Ошибка при отправке сообщения о процессе генерации: {e}")
             break
-
-
-
 
 
 async def perform_username_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
@@ -191,7 +182,7 @@ async def perform_username_generation(query: types.CallbackQuery, state: FSMCont
         await query.message.answer("❌ Ошибка при генерации. Попробуйте ещё раз.", reply_markup=error_retry_kb())
         await state.clear()
 
-
+from keyboards.generate import generate_username_kb
 
 
 async def handle_generation_result(query: types.CallbackQuery, usernames: list[str], context: str, style: str | None,
@@ -209,13 +200,14 @@ async def handle_generation_result(query: types.CallbackQuery, usernames: list[s
     # Вычисляем время генерации
     duration = (datetime.now() - start_dt).total_seconds()
 
-    style_rus = config.STYLE_TRANSLATIONS.get(style, style or "")
-    time_prefix = f"\\[{escape_md(f'{duration:.2f}')} сек\\] "  # Экранируем время с точкой
-    text = f"{time_prefix}Вот уникальные имена {'в стиле *' + escape_md(style_rus) + '*' if style else ''} на тему *{escape_md(context)}*:"
+    # Вызываем функцию generate_username_kb, которая сама формирует текст и клавиатуру
+    message_text, keyboard = generate_username_kb(usernames, context, style, duration)
 
     await query.message.answer(
-        text,
+        message_text,
         parse_mode="MarkdownV2",
-        reply_markup=generate_username_kb(usernames)
+        reply_markup=keyboard
     )
+
     logging.info("✅ Результаты генерации отправлены пользователю.")
+

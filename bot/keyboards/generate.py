@@ -1,16 +1,41 @@
-from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 import logging
+import re
+from datetime import datetime
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
-def generate_username_kb(usernames: list) -> InlineKeyboardMarkup:
-    kb_list = [
-        [InlineKeyboardButton(text=username, callback_data=f"username:{username}")]
-        for username in usernames # для каждого username в списке usernames -- список создается в process_context_input (handlers.generate)
-    ]
-    kb_list.append([
-        InlineKeyboardButton(text=" Попробовать снова", callback_data="generate"),
-        InlineKeyboardButton(text="🔙 В меню", callback_data="back_to_main")
+
+def escape_md(text: str) -> str:
+    """Экранирует спецсимволы для MarkdownV2"""
+    if not text:
+        return ""
+    return re.sub(r'([_*[\]()~`>#+-=|{}.!@-])', r'\\\1', text)
+
+def generate_username_kb(usernames: list, context: str, style: str = None, duration: float = 0.0) -> (
+        str, InlineKeyboardMarkup):
+    """
+    Формирует текст сообщения и клавиатуру с кнопками
+    """
+    # Экранируем стиль, если он указан
+    style_rus = f"в стиле *{escape_md(style)}*" if style else ""
+
+    # Экранируем время выполнения
+    time_prefix = f"\\[{escape_md(f'{duration:.2f}')} сек\\] "
+
+    # Формируем текст сообщения с экранированием @
+    message_text = (
+            f"🎭 {time_prefix}Вот уникальные имена {style_rus} на тему *{escape_md(context)}*:\n"
+            + "\n".join([f"\\- @{escape_md(username)}" for username in usernames])
+    )
+
+    # Создаем клавиатуру с кнопками "Попробовать снова" и "В меню"
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="Попробовать снова", callback_data="generate")],
+        [InlineKeyboardButton(text="🔙 В меню", callback_data="back_to_main")]
     ])
-    return InlineKeyboardMarkup(inline_keyboard=kb_list)
+
+    return message_text, kb
+
+
 
 def error_retry_kb() -> InlineKeyboardMarkup:
     """Клавиатура для ошибки: повторить генерацию или вернуться в главное меню."""
