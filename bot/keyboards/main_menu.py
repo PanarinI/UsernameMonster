@@ -5,7 +5,7 @@ GROUP_URL = "https://t.me/bot_and_kot"  # 🔥
 def main_menu_kb() -> InlineKeyboardMarkup:
     """Главное меню с четырьмя кнопками, включая вступление в группу"""
     kb_list = [
-        [InlineKeyboardButton(text="🔭 Поймать три имени", callback_data="generate")],
+        [InlineKeyboardButton(text="🔭 Найти уникальные имена", callback_data="generate")],
         [InlineKeyboardButton(text="🧬 Проверить имя на уникальность", callback_data="check")],
         [InlineKeyboardButton(text="🌠️ Тайны пространства имён", callback_data="help")],
         [InlineKeyboardButton(text="🚀 Мастерская БОТиКОТ", url=GROUP_URL)]  # ✅ Добавляем кнопку!

@@ -94,7 +94,7 @@ async def back_to_main(query: types.CallbackQuery, state: FSMContext):
     await asyncio.sleep(0.05)
 
     await query.message.answer(
-        "Ты снова на главной тропе.",
+        "Попробуем найти что-то особенное?",
         reply_markup=main_menu_kb()
     )
     await query.answer()
