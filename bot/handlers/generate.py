@@ -38,6 +38,7 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
         reply_markup=back_to_main_kb()
     )
 
+
     await state.set_state(GenerateUsernameStates.waiting_for_context)
     await query.answer()  # Telegram требует подтверждения, что callback обработан.
 
