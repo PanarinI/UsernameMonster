@@ -5,9 +5,9 @@ from aiogram.filters import Command
 from services.generate import gen_process_and_check  # Генерация никнеймов
 import config
 
-group_router = Router()
+namehunt_command_router = Router()
 
-@group_router.message(Command("namehunt"))
+@namehunt_command_router.message(Command("namehunt"))
 async def send_namehunt(message: types.Message):
     """Обработчик команды /namehunt в группе"""
     logging.info(f"📩 Команда /namehunt от {message.from_user.username} в группе {message.chat.id}")

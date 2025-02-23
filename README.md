@@ -16,7 +16,7 @@
 - [IDEAS](docs/IDEAS.md )
 
 
-- [CHANGELOG](docs/CHANGELOG.md)
+- [CHANGELOG](bot/CHANGELOG.md)
 - [TASKS](docs/_TASKS.md)
 
 

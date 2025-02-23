@@ -31,8 +31,10 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
     await state.update_data(start_time=datetime.now().isoformat())
     await query.message.answer(
         "🔭 О чём должно говорить имя? Напиши тему, и я поймаю три уникальных имени.\n"
-        "💫  <i>Например: «загадки истории», «космические котики», или что угодно - пространство имён бесконечно!</i>",
+        "💫 <i>Например: «загадки истории», «космические котики», или что угодно — "
+        '<a href="https://telegra.ph/Mogut-li-zakonchitsya-Telegram-imena-02-21">пространство имён бесконечно!</a></i>',
         parse_mode="HTML",
+        disable_web_page_preview=True,
         reply_markup=back_to_main_kb()
     )
 
