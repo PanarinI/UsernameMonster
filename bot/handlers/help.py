@@ -15,8 +15,12 @@ async def cmd_help(message: types.Message, state: FSMContext):
     await state.clear()  # ✅ Принудительно очищаем ВСЕ состояния перед обработкой команды
     await asyncio.sleep(0.05)  # ✅ Даём FSM время сброситься
 
-    await message.answer(get_help_text(), parse_mode="Markdown", reply_markup=back_to_main_kb())
-
+    await message.answer(
+        get_help_text(),
+        parse_mode="Markdown",  # ✅ Используем одинаковый Markdown
+        reply_markup=back_to_main_kb(),
+        disable_web_page_preview=True  # ✅ Отключаем превью ссылки
+    )
 
 
 @help_router.callback_query(F.data == "help")
@@ -27,9 +31,9 @@ async def handle_help(query: types.CallbackQuery, state: FSMContext):
     await query.answer()
     await query.message.answer(
         get_help_text(),
-        parse_mode="Markdown",
-        reply_markup=back_to_main_kb()
+        parse_mode="Markdown",  # ✅ Такой же режим Markdown
+        reply_markup=back_to_main_kb(),
+        disable_web_page_preview=True  # ✅ Отключаем превью ссылки
     )
-
 
 
