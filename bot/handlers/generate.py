@@ -284,7 +284,7 @@ async def choose_username_handler(query: CallbackQuery, state: FSMContext):
 
     await query.message.answer(
         f"Отличный выбор! Переходим к созданию концепта бренда на основе <b>{username}</b>.\n"
-        f'<a href="{link}">Нажмите, чтобы продолжить</a>',
+        f'<a href="{link}">Нажмите, чтобы продолжить</a> (вы перейдете к другому боту)',
         parse_mode="HTML",
         disable_web_page_preview=True
     )
