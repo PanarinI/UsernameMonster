@@ -10,12 +10,10 @@ def escape_md(text: str) -> str:
         return ""
     return re.sub(r'([_*[\]()~`>#+-=|{}.!@-])', r'\\\1', text)
 
-
-
 def generate_username_kb(usernames: list, context: str, style: str = None, duration: float = 0.0) -> (
         str, InlineKeyboardMarkup):
     """
-    Формирует текст сообщения и клавиатуру с кнопками, включая переход к созданию бренда
+    Формирует текст сообщения и клавиатуру с кнопками
     """
     # Экранируем стиль, если он указан
     style_rus = f"в стиле *{escape_md(style)}*" if style else ""
@@ -29,15 +27,13 @@ def generate_username_kb(usernames: list, context: str, style: str = None, durat
             + "\n".join([f"\\- @{escape_md(username)}" for username in usernames])
     )
 
-    # Создаем клавиатуру с кнопками "Попробовать снова", "В меню" и "Создать бренд из имени"
+    # Создаем клавиатуру с кнопками "Попробовать снова" и "В меню"
     kb = InlineKeyboardMarkup(inline_keyboard=[
         [InlineKeyboardButton(text="Попробовать снова", callback_data="generate")],
-        [InlineKeyboardButton(text="🔙 В меню", callback_data="back_to_main")],
-        [InlineKeyboardButton(text="🆕 Создать бренд из имени", callback_data="create_brand")]
+        [InlineKeyboardButton(text="🔙 В меню", callback_data="back_to_main")]
     ])
 
     return message_text, kb
-
 
 
 
@@ -49,6 +45,9 @@ def error_retry_kb() -> InlineKeyboardMarkup:
     ]
     return InlineKeyboardMarkup(inline_keyboard=kb_list)
 
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 def initial_styles_kb():
     """Первый уровень меню: сразу сгенерировать или выбрать стиль"""

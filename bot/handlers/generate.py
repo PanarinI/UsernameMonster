@@ -2,13 +2,17 @@ import logging
 import asyncio
 import re
 from datetime import datetime
-from typing import List
+from aiogram.types import CallbackQuery, InlineKeyboardMarkup, InlineKeyboardButton
+
+import json
+import base64
+import urllib.parse
+
 from aiogram import Bot, Router, types, F
 from aiogram.fsm.context import FSMContext
 from aiogram.filters import Command
-from keyboards.generate import escape_md
 from services.generate import gen_process_and_check
-from keyboards.generate import generate_username_kb, error_retry_kb, styles_kb, initial_styles_kb
+from keyboards.generate import generate_username_kb, error_retry_kb, styles_kb, initial_styles_kb, escape_md
 from keyboards.main_menu import main_menu_kb, back_to_main_kb
 from .states import GenerateUsernameStates
 
@@ -142,7 +146,7 @@ async def send_progress_messages(query: types.CallbackQuery):
             break
 
 
-async def perform_username_generation(query: types.CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
+async def perform_username_generation(query: CallbackQuery, state: FSMContext, bot: Bot, style: str | None):
     data = await state.get_data()
     context_text = data.get("context", "")
     start_time = data.get("start_time", "")
@@ -158,7 +162,6 @@ async def perform_username_generation(query: types.CallbackQuery, state: FSMCont
 
     logging.info(f"🚀 Генерация username: контекст='{context_text}', стиль='{style}'")
 
-    # отправляем сообщение "⏳ Выслеживаю..."
     await query.message.answer("⏳ Выслеживаю...")
 
     try:
@@ -177,8 +180,17 @@ async def perform_username_generation(query: types.CallbackQuery, state: FSMCont
             await state.clear()
             return
 
+        # Сохраняем сгенерированные usernames в FSM
+        await state.update_data(usernames=usernames)
         await handle_generation_result(query, usernames, context_text, style, start_time)
+        await state.set_state(None)  # Сбрасываем состояние без очистки данных
+
+
+    except Exception as e:
+        logging.error(f"❌ Ошибка генерации: {e}")
+        await query.message.answer("❌ Ошибка при генерации. Попробуйте ещё раз.", reply_markup=error_retry_kb())
         await state.clear()
+
 
     except Exception as e:
         logging.error(f"❌ Ошибка генерации: {e}")
@@ -213,4 +225,69 @@ async def handle_generation_result(query: types.CallbackQuery, usernames: list[s
     )
 
     logging.info("✅ Результаты генерации отправлены пользователю.")
+
+
+
+# Обработчик кнопки "Создать бренд из имени"
+@generate_router.callback_query(F.data == "create_brand")
+async def create_brand_handler(query: CallbackQuery, state: FSMContext):
+    """
+    Показать пользователю доступные username в виде инлайн-кнопок для выбора.
+    """
+    await query.answer()
+
+    # Получаем сгенерированные username из состояния FSM
+    data = await state.get_data()
+    usernames = data.get("usernames", [])
+
+    if not usernames:
+        logging.error("❌ Не удалось найти доступные username в FSM.")
+        await query.message.answer("❌ Ошибка: Не удалось найти доступные username. Попробуйте снова.")
+        return
+
+    # Отправляем новое сообщение с кнопками для выбора username
+    message_text = "Выберите имя для создания бренда:"
+
+    # Добавляем инлайн-кнопки для каждого username
+    kb = InlineKeyboardMarkup(inline_keyboard=[ # создаем пустую клавиатуру с пустым списком inline_keyboard
+        [InlineKeyboardButton(text=f"@{username}", callback_data=f"choose_username:{username}")]
+        for username in usernames
+    ])
+
+    await query.message.answer(message_text, reply_markup=kb)
+
+
+@generate_router.callback_query(lambda c: c.data.startswith("choose_username:"))
+async def choose_username_handler(query: CallbackQuery, state: FSMContext):
+    await query.answer()
+
+    # Получаем выбранный username
+    username = query.data.split(":")[1].strip()
+
+    # Получаем context из FSM
+    data = await state.get_data()
+    context_text = data.get("context", "").strip()
+
+    if not context_text:
+        logging.warning(f"⚠️ Context отсутствует в FSM для user_id={query.from_user.id}.")
+        await query.message.answer("⚠️ Ошибка: не удалось передать контекст. Попробуйте снова.")
+        return
+
+    # Собираем данные в словарь
+    data = {"username": username, "context": context_text}
+    # Сериализуем в JSON (с ensure_ascii=True, чтобы результат содержал только допустимые символы)
+    json_str = json.dumps(data, ensure_ascii=True)
+    # Кодируем в URL-safe Base64
+    encoded = base64.urlsafe_b64encode(json_str.encode()).decode()
+    # Формируем ссылку
+    link = f"https://t.me/BrandIncubator_bot?start={encoded}"
+
+    await query.message.answer(
+        f"Отличный выбор! Переходим к созданию концепта бренда на основе <b>{username}</b>.\n"
+        f'<a href="{link}">Нажмите, чтобы продолжить</a>',
+        parse_mode="HTML",
+        disable_web_page_preview=True
+    )
+
+
 

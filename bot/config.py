@@ -8,7 +8,7 @@ MODEL = os.getenv("MODEL")
 MAX_TOKENS = int(os.getenv("MAX_TOKENS"))
 TEMPERATURE = float(os.getenv("TEMPERATURE", "0.7"))
 
-## генерация
+## генерация username
 PROMPT_NO_STYLE = (
     "Создай {n} уникальных и разнообразных username для Telegram по теме '{context}'.\n"
     "Только если тема явно указывает на бота, добавь 'bot' или '_bot'.\n"
@@ -65,7 +65,6 @@ GEN_ATTEMPTS = int(os.getenv("GEN_ATTEMPTS"))
 
 # Максимальное общее время ожидания генерации (в секундах)
 GEN_TIMEOUT = int(os.getenv("GEN_TIMEOUT"))  # Преобразуем в число
-
 
 # Прерывание после нескольких пустых ответов
 MAX_EMPTY_RESPONSES = 3
