@@ -280,7 +280,7 @@ async def choose_username_handler(query: CallbackQuery, state: FSMContext):
     # Кодируем в URL-safe Base64
     encoded = base64.urlsafe_b64encode(json_str.encode()).decode()
     # Формируем ссылку
-    link = f"https://t.me/BrandIncubator_bot?start={encoded}"
+    link = f"https://t.me/Abstract2Real_bot?start={encoded}"
 
     await query.message.answer(
         f"Отличный выбор! Переходим к созданию концепта бренда на основе <b>{username}</b>.\n"
@@ -291,3 +291,6 @@ async def choose_username_handler(query: CallbackQuery, state: FSMContext):
 
 
 
+git remote add origin https://github.com/panarini/usernamemonster.git
+git branch -M main
+git push -u origin main

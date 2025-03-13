@@ -47,4 +47,4 @@ for row in rows:
 df = pd.DataFrame({"Username": usernames, "Price": prices})
 df.to_csv("sold_usernames_with_prices_interval21_23feb2025.csv", index=False, encoding="utf-8")
 
-print("Данные успешно сохранены в sold_usernames_with_prices_interval21_23feb2025.csv")
+print("Данные успешно сохранены в sold_usernames_500_11.03.csv")
