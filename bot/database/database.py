@@ -1,16 +1,15 @@
 import asyncpg
 import os
 import logging
-import config
 from dotenv import load_dotenv
-
+import bot.config
 # Загружаем переменные окружения из .env (ТОЛЬКО для локального режима)
 IS_LOCAL = os.getenv("LOCAL_RUN", "false").lower() == "true"
 
-# Принудительно загружаем переменные (вдруг Амвера игнорит?)
+# Принудительно загружаем переменные
 load_dotenv()
 
-# Загружаем переменные окружения из Amvera
+# Загружаем переменные окружения
 DB_CONFIG = {
     "database": os.getenv("DTBS") or "❌ НЕ НАЙДЕНА",
     "user": os.getenv("USER") or "❌ НЕ НАЙДЕН",
@@ -81,7 +80,7 @@ async def init_db():
                 create_table = file.read()  # Читаем SQL из файла
 
             await conn.execute(create_table)  # Выполняем SQL в БД
-            logging.info("✅ Таблица 'generated_usernames' проверена/создана.")
+            logging.info("✅ Таблица 'generated_usernames_monster' проверена/создана.")
         else:
             logging.error(f"❌ Файл {CREATE_TABLE_SQL_PATH} не найден! Таблица не будет создана.")
     except Exception as e:
@@ -91,9 +90,9 @@ async def init_db():
 
 async def save_username_to_db(username: str, status: str, context: str, category: str, style: str = "None", llm: str = "None"):
     """Сохраняет username в базу данных."""
-    if len(context) > config.MAX_CONTEXT_LENGTH:
-        logging.warning(f"⚠️ Контекст слишком длинный ({len(context)} символов), обрезаем до {config.MAX_CONTEXT_LENGTH}.")
-        context = context[:config.MAX_CONTEXT_LENGTH]
+    if len(context) > bot.config.MAX_CONTEXT_LENGTH:
+        logging.warning(f"⚠️ Контекст слишком длинный ({len(context)} символов), обрезаем до {bot.config.MAX_CONTEXT_LENGTH}.")
+        context = context[:bot.config.MAX_CONTEXT_LENGTH]
 
     conn = await get_connection()
     try:

@@ -11,8 +11,6 @@ from aiogram.types import Update
 from handlers.start import start_router
 from handlers.generate import generate_router
 from handlers.check import check_router
-from handlers.help import help_router
-from handlers.group import namehunt_command_router
 from database.database import init_db
 from logger import setup_logging
 
@@ -41,10 +39,9 @@ async def on_startup():
 
     # Подключаем обработчики команд
     dp.include_router(start_router)
-    dp.include_router(help_router)
     dp.include_router(check_router)
     dp.include_router(generate_router)
-    dp.include_router(namehunt_command_router)
+
 
     if IS_LOCAL:
         logging.info("🛑 Локальный запуск. Webhook НЕ будет установлен.")

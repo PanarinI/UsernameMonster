@@ -7,7 +7,6 @@ def main_menu_kb() -> InlineKeyboardMarkup:
     kb_list = [
         [InlineKeyboardButton(text="🔭 Найти уникальные имена", callback_data="generate")],
         [InlineKeyboardButton(text="🧬 Проверить имя на уникальность", callback_data="check")],
-        [InlineKeyboardButton(text="🌠️ Тайны пространства имён", callback_data="help")],
         [InlineKeyboardButton(text="🚀 Мастерская БОТиКОТ", url=GROUP_URL)]  # ✅ Добавляем кнопку!
     ]
     keyboard = InlineKeyboardMarkup(inline_keyboard=kb_list)

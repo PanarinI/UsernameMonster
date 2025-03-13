@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS generated_usernames (
+CREATE TABLE IF NOT EXISTS generated_usernames_monster (
     id SERIAL PRIMARY KEY,
     username VARCHAR(32) UNIQUE NOT NULL, --уникальный username 32 символа максимум
     status TEXT NOT NULL,

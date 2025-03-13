@@ -10,20 +10,11 @@ TEMPERATURE = float(os.getenv("TEMPERATURE", "0.7"))
 
 ## генерация username
 PROMPT_NO_STYLE = (
-    "Создай {n} уникальных и разнообразных username для Telegram по теме '{context}'.\n"
-    "Только если тема явно указывает на бота, добавь 'bot' или '_bot'.\n"
+    "Создай {n} уникальных username для Telegram по контексту '{context}'.\n"
+    "Строго следуй указаниям в контексте.\n"
     "Используй только латинские буквы, цифры и нижнее подчёркивание (не в начале и не в конце).\n"
     "Длина username: от 5 до 32 символов.\n"
     "Сначала укажи только одну категорию темы (например, 'бизнес'), затем  на следующей строке список username через запятую."
-)
-
-PROMPT_TEST = (
-    "Создай {n} уникальных и разнообразных username для Telegram по теме '{context}'.\n"
-    "Только если тема явно указывает на бота, добавь 'bot' или '_bot'.\n"
-    "Используй только латинские буквы. Цифры и символы (кроме подчёркивания) использовать только в исключительных случаях.\n"
-    "Длина username: преимущественно от 6 до 15 символов.\n"
-#   "Имена должны быть уникальными и не состоять из простых общеупотребительных слов, особенно если они короче 6 символов.\n"
-    "Отдавай предпочтение осмысленным, но не слишком очевидным словам или их сочетаниям.\n"
 )
 
 PROMPT_WITH_STYLE = (
@@ -52,11 +43,11 @@ STYLE_TRANSLATIONS = {
 
 
 # Максимальное количество символов в контексте
-MAX_CONTEXT_LENGTH = 200
+MAX_CONTEXT_LENGTH = int(os.getenv("MAX_CONTEXT_LENGTH"))
 
 # Количество итоговых доступных username, которое должно возвращаться
-AVAILABLE_USERNAME_COUNT = 3
 
+AVAILABLE_USERNAME_COUNT = int(os.getenv("AVAILABLE_USERNAME_COUNT"))
 # Количество username, запрашиваемых у OpenAI за один раз
 GENERATED_USERNAME_COUNT = int(os.getenv("GENERATED_USERNAME_COUNT"))
 
@@ -67,10 +58,10 @@ GEN_ATTEMPTS = int(os.getenv("GEN_ATTEMPTS"))
 GEN_TIMEOUT = int(os.getenv("GEN_TIMEOUT"))  # Преобразуем в число
 
 # Прерывание после нескольких пустых ответов
-MAX_EMPTY_RESPONSES = 3
+MAX_EMPTY_RESPONSES = int(os.getenv("MAX_EMPTY_RESPONSES"))
 
 # Параметр для интервала между запросами (например, 1 секунда) -- способ избежать flood control exceeded
-REQUEST_INTERVAL = 0.3
+REQUEST_INTERVAL = float(os.getenv("REQUEST_INTERVAL"))
 
 
 # Логирование

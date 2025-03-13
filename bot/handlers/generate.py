@@ -34,9 +34,7 @@ async def cmd_generate_username(query: types.CallbackQuery, state: FSMContext):
     await asyncio.sleep(0.05)  # ✅ Даем FSM время сброситься
     await state.update_data(start_time=datetime.now().isoformat())
     await query.message.answer(
-        "🔭 О чём должно говорить имя? Напиши тему, и я поймаю три уникальных имени.\n"
-        "<i>Например: «загадки истории», «космические котики», или что угодно — "
-        '<a href="https://telegra.ph/Mogut-li-zakonchitsya-Telegram-imena-02-21">пространство имён бесконечно!</a></i>',
+        "Комментарий:\n",
         parse_mode="HTML",
         disable_web_page_preview=True,
         reply_markup=back_to_main_kb()
@@ -227,70 +225,3 @@ async def handle_generation_result(query: types.CallbackQuery, usernames: list[s
     logging.info("✅ Результаты генерации отправлены пользователю.")
 
 
-
-# Обработчик кнопки "Создать бренд из имени"
-@generate_router.callback_query(F.data == "create_brand")
-async def create_brand_handler(query: CallbackQuery, state: FSMContext):
-    """
-    Показать пользователю доступные username в виде инлайн-кнопок для выбора.
-    """
-    await query.answer()
-
-    # Получаем сгенерированные username из состояния FSM
-    data = await state.get_data()
-    usernames = data.get("usernames", [])
-
-    if not usernames:
-        logging.error("❌ Не удалось найти доступные username в FSM.")
-        await query.message.answer("❌ Ошибка: Не удалось найти доступные username. Попробуйте снова.")
-        return
-
-    # Отправляем новое сообщение с кнопками для выбора username
-    message_text = "Выберите имя для создания бренда:"
-
-    # Добавляем инлайн-кнопки для каждого username
-    kb = InlineKeyboardMarkup(inline_keyboard=[ # создаем пустую клавиатуру с пустым списком inline_keyboard
-        [InlineKeyboardButton(text=f"@{username}", callback_data=f"choose_username:{username}")]
-        for username in usernames
-    ])
-
-    await query.message.answer(message_text, reply_markup=kb)
-
-
-@generate_router.callback_query(lambda c: c.data.startswith("choose_username:"))
-async def choose_username_handler(query: CallbackQuery, state: FSMContext):
-    await query.answer()
-
-    # Получаем выбранный username
-    username = query.data.split(":")[1].strip()
-
-    # Получаем context из FSM
-    data = await state.get_data()
-    context_text = data.get("context", "").strip()
-
-    if not context_text:
-        logging.warning(f"⚠️ Context отсутствует в FSM для user_id={query.from_user.id}.")
-        await query.message.answer("⚠️ Ошибка: не удалось передать контекст. Попробуйте снова.")
-        return
-
-    # Собираем данные в словарь
-    data = {"username": username, "context": context_text}
-    # Сериализуем в JSON (с ensure_ascii=True, чтобы результат содержал только допустимые символы)
-    json_str = json.dumps(data, ensure_ascii=True)
-    # Кодируем в URL-safe Base64
-    encoded = base64.urlsafe_b64encode(json_str.encode()).decode()
-    # Формируем ссылку
-    link = f"https://t.me/Abstract2Real_bot?start={encoded}"
-
-    await query.message.answer(
-        f"Отличный выбор! Переходим к созданию концепта бренда на основе <b>{username}</b>.\n"
-        f'<a href="{link}">Нажмите, чтобы продолжить</a> (вы перейдете к другому боту)',
-        parse_mode="HTML",
-        disable_web_page_preview=True
-    )
-
-
-
-git remote add origin https://github.com/panarini/usernamemonster.git
-git branch -M main
-git push -u origin main
